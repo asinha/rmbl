@@ -10,7 +10,7 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   const prisma = new PrismaClient();
   const body = await req.json();
-  const { whisperId, typeName } = body;
+  const { whisperId, typeName, customPrompt } = body;
   // Auth
   const auth = getAuth(req);
   if (!auth || !auth.userId) {
@@ -43,7 +43,20 @@ export async function POST(req: NextRequest) {
   const typeFullName =
     RECORDING_TYPES.find((t) => t.value === typeName)?.name || typeName;
 
-  const prompt = `
+  const prompt = typeName === "custom" && customPrompt
+    ? `
+  You are a helpful assistant. You will be given a transcription of an audio recording and you will transform it based on the custom instructions provided.
+  Only output the generation itself, with no introductions, explanations, or extra commentary.
+  
+  The transcription is: ${whisper.fullTranscription}
+
+  Custom instructions: ${customPrompt}
+
+  Remember to use output language like the input transcription language.
+
+  Do not add phrases like "Based on the transcription" or "Let me know if you'd like me to help with anything else."
+  `
+    : `
   You are a helpful assistant. You will be given a transcription of an audio recording and you will generate a ${typeFullName} based on the transcription with markdown formatting. 
   Only output the generation itself, with no introductions, explanations, or extra commentary.
   

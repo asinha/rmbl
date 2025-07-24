@@ -113,7 +113,7 @@ export default function TranscriptionPageClient({ id }: { id: string }) {
   };
 
   // Handler for creating a transformation (streaming)
-  const handleTransform = async (typeName: string) => {
+  const handleTransform = async (typeName: string, customPrompt?: string) => {
     setIsStreaming(true);
     setStreamingText("");
     let newId: string | null = null;
@@ -124,7 +124,7 @@ export default function TranscriptionPageClient({ id }: { id: string }) {
           "Content-Type": "application/json",
           ...(apiKey ? { TogetherAPIToken: apiKey } : {}),
         },
-        body: JSON.stringify({ whisperId: id, typeName }),
+        body: JSON.stringify({ whisperId: id, typeName, customPrompt }),
       });
       if (!res.body) throw new Error("No response body");
       const reader = res.body.getReader();
