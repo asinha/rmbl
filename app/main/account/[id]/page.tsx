@@ -1,11 +1,15 @@
 import { BillingPortalButton } from "@/components/BillingPortalButton";
 
 interface AccountPageProps {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: {
+    id: string;
+  };
+  searchParams?: {
+    [key: string]: string | string[] | undefined;
+  };
 }
 
-export default function AccountPage({
+export default async function AccountPage({
   params,
   searchParams,
 }: AccountPageProps) {
