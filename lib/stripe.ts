@@ -1,4 +1,4 @@
-import Stripe from "stripe";
+const Stripe = require("stripe");
 
 // Add validation for the secret key
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -6,6 +6,6 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-06-30.basil",
+  apiVersion: "2024-06-20",
   typescript: true,
 });
