@@ -1,20 +1,5 @@
-"use client";
-
-// app/pricing/page.tsx
-import { Check } from "lucide-react";
 import { stripe } from "@/lib/stripe";
-import { Button } from "@/components/ui/pricingButton";
-
-interface PricingPlan {
-  id: string;
-  name: string;
-  price: string;
-  priceId: string;
-  period: string;
-  features: string[];
-  cta: string;
-  mostPopular?: boolean;
-}
+import type { Stripe } from "stripe";
 
 export default async function PricingPage() {
   // Fetch prices from Stripe
@@ -23,180 +8,114 @@ export default async function PricingPage() {
     expand: ["data.product"],
   });
 
-  // Define plans with Stripe price IDs
-  const plans: PricingPlan[] = [
+  const pricingPlans = [
     {
-      id: "monthly",
-      name: "Monthly",
+      name: "Basic Plan",
       price: "$10",
       priceId:
-        prices.data.find((p) => p.recurring?.interval === "month")?.id ||
-        "price_monthly",
+        prices.data.find((p: Stripe.Price) => p.recurring?.interval === "month")
+          ?.id || "price_monthly",
+      period: "per month",
+      features: ["Feature 1", "Feature 2", "Feature 3"],
+    },
+    {
+      name: "Pro Plan",
+      price: "$25",
+      priceId:
+        prices.data.find(
+          (p: Stripe.Price) =>
+            p.recurring?.interval === "month" && p.unit_amount === 2500
+        )?.id || "price_pro_monthly",
       period: "per month",
       features: [
-        "All basic features",
-        "24/7 customer support",
-        "1GB storage",
-        "Basic analytics",
+        "Everything in Basic",
+        "Advanced Feature 1",
+        "Advanced Feature 2",
+        "Priority Support",
       ],
-      cta: "Get Started",
     },
     {
-      id: "annual",
-      name: "Annual",
-      price: "$96",
+      name: "Enterprise",
+      price: "$100",
       priceId:
-        prices.data.find((p) => p.recurring?.interval === "year")?.id ||
-        "price_annual",
-      period: "per year (20% off)",
+        prices.data.find((p: Stripe.Price) => p.recurring?.interval === "year")
+          ?.id || "price_enterprise_yearly",
+      period: "per year",
       features: [
-        "Everything in Monthly",
-        "Priority support",
-        "10GB storage",
-        "Advanced analytics",
+        "Everything in Pro",
+        "Custom Integration",
+        "Dedicated Support",
+        "Advanced Analytics",
       ],
-      cta: "Save 20%",
-      mostPopular: true,
-    },
-    {
-      id: "lifetime",
-      name: "Lifetime",
-      price: "$299",
-      priceId: "price_lifetime",
-      period: "one-time payment",
-      features: [
-        "Everything in Annual",
-        "Unlimited storage",
-        "Dedicated account manager",
-        "Custom reporting",
-      ],
-      cta: "Buy Once",
     },
   ];
 
   return (
-    <div className="bg-white py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-            Simple, transparent pricing
-          </h2>
-          <p className="mt-6 text-lg leading-8 text-gray-600">
-            Choose the perfect plan for your needs. Cancel anytime.
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Choose Your Plan
+        </h1>
+        <p className="text-xl text-gray-600 mb-12">
+          Select the perfect plan for your needs
+        </p>
+      </div>
 
-        {/* Coupon Input */}
-        <div className="mt-16 flex justify-center">
-          <div className="w-full max-w-md">
-            <label
-              htmlFor="coupon"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Have a coupon?
-            </label>
-            <div className="mt-1 flex rounded-md shadow-sm">
-              <input
-                type="text"
-                name="coupon"
-                id="coupon"
-                className="block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                placeholder="Enter coupon code"
-              />
-              <button
-                type="button"
-                className="ml-3 inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                Apply
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Pricing Plans */}
-        <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`rounded-3xl p-8 ring-1 ring-gray-200 ${
-                plan.mostPopular ? "bg-gray-900 text-white" : "bg-white"
-              }`}
-            >
-              {plan.mostPopular && (
-                <p className="text-sm font-semibold leading-6 text-indigo-400">
-                  Most popular
-                </p>
-              )}
-              <h3
-                className={`text-2xl font-bold ${
-                  plan.mostPopular ? "text-white" : "text-gray-900"
-                }`}
-              >
+      <div className="grid md:grid-cols-3 gap-8">
+        {pricingPlans.map((plan, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-lg shadow-lg p-8 border border-gray-200 hover:shadow-xl transition-shadow"
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 {plan.name}
               </h3>
-              <div className="mt-6 flex items-baseline gap-x-2">
-                <span
-                  className={`text-4xl font-bold tracking-tight ${
-                    plan.mostPopular ? "text-white" : "text-gray-900"
-                  }`}
-                >
-                  {plan.price}
-                </span>
-                <span
-                  className={`text-sm font-semibold leading-6 ${
-                    plan.mostPopular ? "text-gray-300" : "text-gray-600"
-                  }`}
-                >
-                  {plan.period}
-                </span>
+              <div className="text-4xl font-bold text-indigo-600 mb-2">
+                {plan.price}
               </div>
-              <Button
-                className={`mt-6 w-full ${
-                  plan.mostPopular
-                    ? "bg-indigo-500 hover:bg-indigo-400"
-                    : "bg-gray-900 hover:bg-gray-700"
-                }`}
-                aria-label={`Get started with ${plan.name} plan`}
-                onClick={() => handleCheckout(plan.priceId)}
-              >
-                {plan.cta}
-              </Button>
-              <ul
-                role="list"
-                className={`mt-8 space-y-3 text-sm leading-6 ${
-                  plan.mostPopular ? "text-gray-300" : "text-gray-600"
-                }`}
-              >
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex gap-x-3">
-                    <Check
-                      className={`h-5 w-5 flex-none ${
-                        plan.mostPopular ? "text-indigo-400" : "text-indigo-600"
-                      }`}
-                      aria-hidden="true"
-                    />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+              <div className="text-gray-600">{plan.period}</div>
             </div>
-          ))}
-        </div>
+
+            <ul className="space-y-4 mb-8">
+              {plan.features.map((feature, featureIndex) => (
+                <li key={featureIndex} className="flex items-center">
+                  <svg
+                    className="w-5 h-5 text-green-500 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span className="text-gray-700">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <form action="/api/create-checkout-session" method="POST">
+              <input type="hidden" name="priceId" value={plan.priceId} />
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              >
+                Get Started
+              </button>
+            </form>
+          </div>
+        ))}
+      </div>
+
+      <div className="text-center mt-12">
+        <p className="text-gray-600">
+          All plans include a 14-day free trial. No credit card required.
+        </p>
       </div>
     </div>
   );
-}
-
-// Handle checkout with coupon support
-async function handleCheckout(priceId: string, coupon?: string) {
-  const response = await fetch("/api/checkout", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ priceId, coupon }),
-  });
-
-  const { url } = await response.json();
-  window.location.href = url;
 }
