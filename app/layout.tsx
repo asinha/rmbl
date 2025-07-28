@@ -40,10 +40,10 @@ export default function RootLayout({
             </head>
             <body className={`${raleway.variable} antialiased`}>
               <div className="min-h-screen bg-white flex flex-col">
-                <Header />
+                
                 {children}
                 <Toaster richColors />
-                <Footer />
+                
               </div>
             </body>
           </html>

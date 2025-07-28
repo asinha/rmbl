@@ -23,7 +23,7 @@ export function LandingPage() {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-16 text-center">
         <div className="flex flex-col items-center">
-          <a
+          {/* <a
             href="https://togetherai.link/"
             rel="noopener noreferrer"
             target="_blank"
@@ -36,7 +36,7 @@ export function LandingPage() {
               src="/togetherai.svg"
               className="min-w-[70px] min-h-[11px] mt-0.5"
             />
-          </a>
+          </a> */}
 
           <h1 className="text-[40px] md:text-[60px] font-medium text-center text-[#101828] mb-6 leading-tight">
             Capture Your

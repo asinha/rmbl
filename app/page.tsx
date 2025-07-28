@@ -1,5 +1,7 @@
 "use client";
 
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
 import { LandingPage } from "@/components/landing-page";
 
 export interface Transcription {
@@ -12,5 +14,11 @@ export interface Transcription {
 }
 
 export default function Home() {
-  return <LandingPage />;
+  return (
+    <>
+      <Header />
+      <LandingPage />
+      <Footer />
+    </>
+  );
 }

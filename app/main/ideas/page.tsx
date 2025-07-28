@@ -42,7 +42,7 @@ export default function WhispersPage() {
 
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push("/auth/sign-up?redirectUrl=/main/ideas");
     }
   }, [user, router]);
 

@@ -1,4 +1,4 @@
-export const Footer = () => {
+export const AuthFooter = () => {
   return (
     <div className="flex flex-col md:flex-row justify-between gap-2 px-4 py-[9px] items-center">
       <p className="text-xs text-center text-[#99a1af]">
