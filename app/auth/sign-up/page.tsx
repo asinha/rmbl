@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useEffect } from "react";
 import Head from "next/head";
 import { ArrowRight, Brain, Zap } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
@@ -28,6 +28,25 @@ const JoinRMBL = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
+  // Handle URL messages
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get("message");
+    const errorParam = urlParams.get("error");
+
+    if (message === "account_exists") {
+      setError(
+        "An account with this email already exists. Please sign in instead."
+      );
+    } else if (message === "account_not_found") {
+      setError("No account found with this email. Please sign up first.");
+    } else if (errorParam === "oauth_signup_failed") {
+      setError("Account already exists, please login");
+    } else if (errorParam === "oauth_failed") {
+      setError("Authentication failed. Please try again.");
+    }
+  }, []);
+
   const handleGoogleSignUp = async (): Promise<void> => {
     if (!isLoaded || !signUp) return;
 
@@ -36,7 +55,7 @@ const JoinRMBL = () => {
     try {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/api/sso-callback",
+        redirectUrl: "/api/sso-callback?action=signup",
         redirectUrlComplete: "/main/ideas",
       });
     } catch (err: unknown) {
@@ -88,7 +107,7 @@ const JoinRMBL = () => {
         // In Clerk v5+, we need to handle the session differently
         if (createdSessionId) {
           // Typically you would redirect after verification
-          router.push("/dashboard");
+          router.push("/main/ideas");
         } else {
           throw new Error("Failed to create session");
         }

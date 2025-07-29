@@ -34,6 +34,23 @@ const LoginRMBL = () => {
     }
   }, [userLoaded, isSignedIn, router]);
 
+  // Handle URL messages
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get("message");
+    const errorParam = urlParams.get("error");
+
+    if (message === "account_exists") {
+      setError(
+        "An account with this email already exists. Please sign in instead."
+      );
+    } else if (message === "account_not_found") {
+      setError("No account found with this email. Please sign up first.");
+    } else if (errorParam === "oauth_failed") {
+      setError("Authentication failed. Please try again.");
+    }
+  }, []);
+
   const handleGoogleSignIn = async (): Promise<void> => {
     if (!clerkLoaded || !signIn) return;
 
@@ -42,12 +59,15 @@ const LoginRMBL = () => {
     try {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/api/sso-callback",
+        redirectUrl: "/api/sso-callback?action=login",
         redirectUrlComplete: "/main/ideas",
       });
     } catch (err: unknown) {
       const clerkError = err as ClerkError;
-      setError(clerkError.errors?.[0]?.message || "Google sign in failed");
+      setError(
+        clerkError.errors?.[0]?.message ||
+          "Account already exists, please login"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -111,10 +131,11 @@ const LoginRMBL = () => {
               style={{ textShadow: "0 0 20px rgba(255, 255, 255, 0.3)" }}
             />
             <h1 className="text-3xl lg:text-4xl font-bold mt-6 mb-4">
-              Welcome
+              Welcome Back
             </h1>
             <p className="text-base lg:text-lg text-indigo-100">
-              Organize your thoughts and boost productivity
+              Access your organized thoughts and continue building your second
+              brain
             </p>
           </div>
         </div>
