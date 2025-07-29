@@ -1,5 +1,5 @@
 import { AuthFooter } from "@/components/AuthFooter";
-import { Header } from "@/components/AuthHeader";
+import { AuthHeader } from "@/components/AuthHeader";
 
 export default function MainLayout({
   children,
@@ -8,7 +8,7 @@ export default function MainLayout({
 }) {
   return (
     <>
-      <Header />
+      <AuthHeader />
       <main className="flex-1">{children}</main>
       <AuthFooter />
     </>

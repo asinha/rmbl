@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Raleway } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 import { TRPCReactProvider } from "@/trpc/client";
 import { TogetherApiKeyProvider } from "@/components/TogetherApiKeyProvider";
-import { Footer } from "@/components/Footer";
 import PlausibleProvider from "next-plausible";
 
 const raleway = Raleway({
@@ -40,10 +38,8 @@ export default function RootLayout({
             </head>
             <body className={`${raleway.variable} antialiased`}>
               <div className="min-h-screen bg-white flex flex-col">
-                
                 {children}
                 <Toaster richColors />
-                
               </div>
             </body>
           </html>

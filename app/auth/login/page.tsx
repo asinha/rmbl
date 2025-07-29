@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, FormEvent, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Head from "next/head";
-import { Brain } from "lucide-react";
+import { ArrowRight, Brain, Zap } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import Link from "next/link";
-import { useSignIn, useUser } from "@clerk/nextjs";
+import { useSignUp, useSignIn, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 interface ClerkError {
@@ -17,15 +16,15 @@ interface ClerkError {
   }[];
 }
 
-const LoginRMBL = () => {
-  const { isLoaded: clerkLoaded, signIn } = useSignIn();
+const AuthRMBL = () => {
+  const { isLoaded: signUpLoaded, signUp } = useSignUp();
+  const { isLoaded: signInLoaded, signIn } = useSignIn();
   const { isLoaded: userLoaded, isSignedIn } = useUser();
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+
+  const isLoaded = signUpLoaded && signInLoaded && userLoaded;
 
   // Redirect if already signed in
   useEffect(() => {
@@ -34,75 +33,59 @@ const LoginRMBL = () => {
     }
   }, [userLoaded, isSignedIn, router]);
 
-  // Handle URL messages
+  // Handle URL error messages
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const message = urlParams.get("message");
     const errorParam = urlParams.get("error");
 
-    if (message === "account_exists") {
-      setError(
-        "An account with this email already exists. Please sign in instead."
-      );
-    } else if (message === "account_not_found") {
-      setError("No account found with this email. Please sign up first.");
-    } else if (errorParam === "oauth_failed") {
+    if (errorParam === "oauth_failed") {
       setError("Authentication failed. Please try again.");
     }
   }, []);
 
-  const handleGoogleSignIn = async (): Promise<void> => {
-    if (!clerkLoaded || !signIn) return;
+  const handleGoogleAuth = async (): Promise<void> => {
+    if (!isLoaded) return;
 
     setIsLoading(true);
     setError("");
+
     try {
-      await signIn.authenticateWithRedirect({
-        strategy: "oauth_google",
-        redirectUrl: "/api/sso-callback?action=login",
-        redirectUrlComplete: "/main/ideas",
-      });
-    } catch (err: unknown) {
-      const clerkError = err as ClerkError;
-      setError(
-        clerkError.errors?.[0]?.message ||
-          "Account already exists, please login"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleEmailSignIn = async (e: FormEvent): Promise<void> => {
-    e.preventDefault();
-    if (!clerkLoaded || !signIn) return;
-
-    setIsLoading(true);
-    setError("");
-    try {
-      const result = await signIn.create({
-        identifier: email,
-        password,
-      });
-
-      if (result.status === "complete") {
-        // Clerk automatically handles session creation
-        router.push("/main/ideas");
-      } else {
-        throw new Error("Sign in not complete");
+      // Try sign in first
+      if (signIn) {
+        await signIn.authenticateWithRedirect({
+          strategy: "oauth_google",
+          redirectUrl: "/api/sso-callback",
+          redirectUrlComplete: "/main/ideas",
+        });
       }
     } catch (err: unknown) {
-      const clerkError = err as ClerkError;
-      setError(clerkError.errors?.[0]?.message || "Sign in failed");
-    } finally {
-      setIsLoading(false);
+      // If sign in fails, try sign up
+      try {
+        if (signUp) {
+          await signUp.authenticateWithRedirect({
+            strategy: "oauth_google",
+            redirectUrl: "/api/sso-callback",
+            redirectUrlComplete: "/main/ideas",
+          });
+        }
+      } catch (signUpErr: unknown) {
+        const clerkError = signUpErr as ClerkError;
+        setError(
+          clerkError.errors?.[0]?.message || "Google authentication failed"
+        );
+        setIsLoading(false);
+      }
     }
+    // Note: Don't set isLoading to false here as the redirect will handle the loading state
   };
 
-  if (!userLoaded || !clerkLoaded || isSignedIn) {
+  if (!isLoaded || isSignedIn) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -110,7 +93,7 @@ const LoginRMBL = () => {
   return (
     <div className="bg-white font-sans">
       <Head>
-        <title>Login to RMBL</title>
+        <title>Welcome to RMBL</title>
         <link
           href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
           rel="stylesheet"
@@ -123,153 +106,160 @@ const LoginRMBL = () => {
 
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Left Side - Gradient Section */}
-        <div className="hidden lg:flex lg:w-1/3 bg-gradient-to-br from-indigo-500 to-purple-600 flex-col justify-center items-center text-white p-6 lg:p-12">
+        <div className="hidden lg:flex lg:w-1/3 bg-gradient-to-br from-indigo-500 to-purple-600 flex-col justify-center items-center text-white p-12">
           <div className="text-center">
-            <Brain
-              className="mx-auto"
-              size={80}
+            {/* <Brain
+              size={100}
+              className="mx-auto mb-8"
               style={{ textShadow: "0 0 20px rgba(255, 255, 255, 0.3)" }}
+            /> */}
+            <img
+              src="/LOGO RMBL-ICON_WHITE.svg"
+              className="min-w-5 min-h-9 size-100"
+              alt="Logo"
             />
-            <h1 className="text-3xl lg:text-4xl font-bold mt-6 mb-4">
-              Welcome Back
+            <h1 className="text-4xl lg:text-5xl font-bold mb-6">
+              Your Second Brain
             </h1>
-            <p className="text-base lg:text-lg text-indigo-100">
-              Access your organized thoughts and continue building your second
-              brain
+            <p className="text-xl text-indigo-100 leading-relaxed max-w-md">
+              Transform scattered thoughts into organized insights with the
+              power of your voice
             </p>
           </div>
         </div>
 
-        {/* Right Side - Form Section */}
-        <div className="w-full lg:w-2/3 flex flex-col justify-center items-center p-4 sm:p-8 lg:p-12">
+        {/* Right Side - Auth Section */}
+        <div className="w-full lg:w-2/3 flex flex-col justify-center items-center p-8 lg:p-16">
           <div className="w-full max-w-md">
             {/* Mobile-only logo */}
-            <div className="lg:hidden mb-6 text-center">
-              <Brain
-                size={60}
-                className="mx-auto text-indigo-600"
-                style={{ textShadow: "0 0 15px rgba(99, 102, 241, 0.3)" }}
-              />
-              <h1 className="text-2xl font-bold text-indigo-600 mt-2">RMBL</h1>
+            <div className="lg:hidden mb-10 text-center">
+              <div className="flex flex-col justify-center items-center">
+                <img
+                  src="/LOGO RMBL-ICON.svg"
+                  className="min-w-5 min-h-9 size-50"
+                  alt="Logo"
+                />
+              </div>
+
+              {/* <h1 className="text-3xl font-bold text-indigo-600">RMBL</h1>
+              <p className="text-gray-600 mt-2">Your Second Brain</p> */}
             </div>
 
-            <div className="text-left mb-6 sm:mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                Login to RMBL
+            <div className="text-center mb-10">
+              <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
+                Welcome to RMBL
               </h2>
-              <p className="text-gray-600 mt-1 sm:mt-2">
-                Access your second brain
+              <p className="text-lg text-gray-600">
+                Get started in seconds with your Google account
               </p>
             </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm">
+              <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg text-center">
                 {error}
               </div>
             )}
 
-            <div className="border border-gray-200 rounded-lg p-4 sm:p-6">
+            <div className="space-y-6">
               <button
-                onClick={handleGoogleSignIn}
+                onClick={handleGoogleAuth}
                 disabled={isLoading}
-                className={`w-full bg-white border border-gray-300 text-gray-700 font-medium py-2 sm:py-3 px-4 rounded-lg flex items-center justify-center hover:bg-gray-50 transition duration-150 ${
-                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                className={`w-full bg-white border-1 border-gray-200 text-gray-700 font-semibold py-4 px-6 rounded-xl flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition duration-200 shadow-sm ${
+                  isLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:shadow-md"
                 }`}
               >
-                <FcGoogle className="w-5 h-5 mr-3" />
-                {isLoading ? "Processing..." : "Continue with Google"}
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-gray-600 mr-3"></div>
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <FcGoogle className="w-6 h-6 mr-3" />
+                    Continue with Google
+                  </>
+                )}
               </button>
 
-              <div className="flex items-center my-4">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="mx-4 text-gray-500 text-sm">OR</span>
-                <div className="flex-grow border-t border-gray-300"></div>
+              <div className="text-center">
+                <p className="text-sm text-gray-500">
+                  By continuing, you agree to our{" "}
+                  <a
+                    href="/terms-of-service"
+                    className="text-indigo-600 hover:text-indigo-800 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="/privacy-policy"
+                    className="text-indigo-600 hover:text-indigo-800 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Privacy Policy
+                  </a>
+                </p>
               </div>
-
-              <form onSubmit={handleEmailSignIn} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="your@email.com"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                    />
-                    <label
-                      htmlFor="remember-me"
-                      className="ml-2 block text-sm text-gray-700"
-                    >
-                      Remember me
-                    </label>
-                  </div>
-
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-indigo-600 hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full bg-indigo-600 text-white font-medium py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ${
-                    isLoading ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                >
-                  {isLoading ? "Signing in..." : "Sign in"}
-                </button>
-              </form>
             </div>
 
-            <p className="mt-8 sm:mt-10 text-center text-sm sm:text-base text-gray-600">
-              Don't have an account?{" "}
-              <Link
-                href="/auth/sign-up"
-                className="text-indigo-600 font-medium hover:underline"
-              >
-                Sign up
-              </Link>
-            </p>
+            {/* Features Section */}
+            <div className="mt-12">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">
+                Why professionals choose RMBL
+              </h3>
+              <div className="space-y-4">
+                {/* Feature 1 */}
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl flex items-start">
+                  <div className="bg-blue-500 p-2 rounded-full mr-4 flex-shrink-0">
+                    <Zap className="text-white w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-1">
+                      Instant Capture
+                    </h4>
+                    <p className="text-gray-600 text-sm">
+                      Record thoughts in one click, no typing required
+                    </p>
+                  </div>
+                </div>
+
+                {/* Feature 2 */}
+                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl flex items-start">
+                  <div className="bg-purple-500 p-2 rounded-full mr-4 flex-shrink-0">
+                    <Brain className="text-white w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-1">
+                      AI Transformation
+                    </h4>
+                    <p className="text-gray-600 text-sm">
+                      Turn voice notes into emails, blogs, and lists
+                      automatically
+                    </p>
+                  </div>
+                </div>
+
+                {/* Feature 3 */}
+                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl flex items-start">
+                  <div className="bg-green-500 p-2 rounded-full mr-4 flex-shrink-0">
+                    <ArrowRight className="text-white w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-1">
+                      Async Workflow
+                    </h4>
+                    <p className="text-gray-600 text-sm">
+                      Perfect for busy schedules and remote work
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -277,4 +267,4 @@ const LoginRMBL = () => {
   );
 };
 
-export default LoginRMBL;
+export default AuthRMBL;
