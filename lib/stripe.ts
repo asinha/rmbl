@@ -1,11 +1,34 @@
-const Stripe = require("stripe");
+// lib/stripe.ts
+import Stripe from "stripe";
+import { loadStripe } from "@stripe/stripe-js";
 
-// Add validation for the secret key
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is missing in environment variables");
-}
+// Server-side Stripe instance (only import this in API routes or server components)
+export const getServerStripe = () => {
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-  typescript: true,
-});
+  if (!stripeSecretKey) {
+    throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
+  }
+
+  return new Stripe(stripeSecretKey, {
+    apiVersion: "2025-06-30.basil",
+  });
+};
+
+// Client-side Stripe instance
+let stripePromise: Promise<any> | null = null;
+
+export const getStripe = () => {
+  const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
+  if (!stripePublishableKey) {
+    throw new Error(
+      "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set in environment variables"
+    );
+  }
+
+  if (!stripePromise) {
+    stripePromise = loadStripe(stripePublishableKey);
+  }
+  return stripePromise;
+};
