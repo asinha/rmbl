@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import { BillingPortalParams } from "@/types/stripe";
+// app/api/billing-portal/route.ts
+import { getServerStripe } from "@/lib/stripe";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { customerId, returnUrl } =
-      (await request.json()) as BillingPortalParams;
+    const { customerId } = await request.json();
 
     if (!customerId) {
       return NextResponse.json(
@@ -14,17 +13,22 @@ export async function POST(request: Request) {
       );
     }
 
+    const stripe = getServerStripe();
+
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: returnUrl || `${process.env.NEXT_PUBLIC_SITE_URL}/account`,
+      return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
     });
 
     return NextResponse.json({ url: portalSession.url });
-  } catch (error: unknown) {
-    console.error("Stripe Portal Error:", error);
-
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  } catch (error) {
+    console.error("Billing portal error:", error);
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error ? error.message : "Portal creation failed",
+      },
+      { status: 500 }
+    );
   }
 }
