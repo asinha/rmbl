@@ -97,7 +97,7 @@ export function Dashboard({ transcriptions }: DashboardProps) {
         <div className="mb-8">
           <div className="mx-auto max-w-[729px] w-full md:rounded-xl bg-white border-b-[0.7px] md:border-[0.7px] border-gray-200 md:border-[#d1d5dc] px-6 py-5 flex flex-col gap-3 md:my-4 ">
             <h1 className="text-xl font-semibold text-left text-[#101828]">
-              Your Whispers
+              Your RMBLs
             </h1>
 
             <div className="relative">
@@ -115,10 +115,10 @@ export function Dashboard({ transcriptions }: DashboardProps) {
           {filteredTranscriptions.length === 0 && searchQuery === "" ? (
             <div className="text-center py-16 flex flex-col items-center">
               <h2 className="text-xl font-medium text-left text-black mb-2">
-                Welcome, whisperer!
+                Welcome, RMBLer!
               </h2>
               <p className="max-w-[264px] text-base text-center text-[#364153] mb-8">
-                Start by creating a new Whisper, or
+                Start by creating a new RMBL, or
                 <br />
                 upload a voice note for
                 <br />
@@ -209,7 +209,7 @@ export function Dashboard({ transcriptions }: DashboardProps) {
               className="w-full bg-[#101828] text-base text-left text-white rounded-lg h-[42px]"
             >
               <img src="/microphone.svg" className="w-5 h-5 size-5" />
-              New Whisper
+              New RMBL
               {/* <img src="/command.svg" className="w-[87px] h-[16px]" /> */}
             </Button>
           </div>

@@ -115,7 +115,7 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
         queryKey: trpc.whisper.listWhispers.queryKey(),
       });
       // Redirect to whisper page
-      router.push(`/whispers/${id}`);
+      router.push(`/main/ideas/${id}`);
     } catch (err) {
       toast.error("Failed to transcribe audio. Please try again.");
       setIsProcessing("idle");
