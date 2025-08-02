@@ -214,9 +214,9 @@ const AuthRMBL = () => {
               </h3>
               <div className="space-y-4">
                 {/* Feature 1 */}
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl flex items-start">
-                  <div className="bg-blue-500 p-2 rounded-full mr-4 flex-shrink-0">
-                    <Zap className="text-white w-5 h-5" />
+                <div className="bg-gray-50 p-4 rounded-xl flex items-start">
+                  <div className="bg-blue-100 p-2 rounded-full mr-4 flex-shrink-0">
+                    <Zap className="text-blue-500 w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-1">
@@ -229,9 +229,9 @@ const AuthRMBL = () => {
                 </div>
 
                 {/* Feature 2 */}
-                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl flex items-start">
-                  <div className="bg-purple-500 p-2 rounded-full mr-4 flex-shrink-0">
-                    <Brain className="text-white w-5 h-5" />
+                <div className="bg-gray-50 p-4 rounded-xl flex items-start">
+                  <div className="bg-purple-100 p-2 rounded-full mr-4 flex-shrink-0">
+                    <Brain className="text-purple-500 w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-1">
@@ -245,9 +245,9 @@ const AuthRMBL = () => {
                 </div>
 
                 {/* Feature 3 */}
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl flex items-start">
-                  <div className="bg-green-500 p-2 rounded-full mr-4 flex-shrink-0">
-                    <ArrowRight className="text-white w-5 h-5" />
+                <div className="bg-gray-50 p-4 rounded-xl flex items-start">
+                  <div className="bg-green-100 p-2 rounded-full mr-4 flex-shrink-0">
+                    <ArrowRight className="text-green-500 w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-1">
