@@ -7,20 +7,10 @@ export const AuthFooter = () => {
 
       <div className="flex flex-row gap-4">
         <a
-          href="https://github.com/your-org/rmbl"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/terms"
           className="text-xs text-[#364153] hover:text-[#2563eb] transition-colors"
         >
-          GitHub
-        </a>
-        <a
-          href="https://x.com/your-handle"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-[#364153] hover:text-[#2563eb] transition-colors"
-        >
-          Twitter
+          T&amp;C
         </a>
         <a
           href="/privacy"
@@ -29,10 +19,20 @@ export const AuthFooter = () => {
           Privacy
         </a>
         <a
-          href="/terms"
+          href="https://instagram.com/your-handle"
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-xs text-[#364153] hover:text-[#2563eb] transition-colors"
         >
-          Terms
+          Insta
+        </a>
+        <a
+          href="https://x.com/your-handle"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-[#364153] hover:text-[#2563eb] transition-colors"
+        >
+          Twitter
         </a>
       </div>
     </div>

@@ -13,8 +13,8 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  title: "Whisper App - Capture Your Thoughts By Voice",
-  description: "Convert your thoughts into text by voice with Whisper.",
+  title: "RMBL App - Capture Your Thoughts By Voice",
+  description: "Convert your thoughts into text by voice with RMBL.",
   openGraph: {
     images: "https://usewhisper.io/og.jpg",
   },

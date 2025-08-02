@@ -107,8 +107,23 @@ export const RECORDING_TYPES: {
     name: "Email",
     value: "email",
   },
+  {
+    name: "LinkedIn post",
+    value: "linkedin-post",
+  },
   // {
   //   name: "Custom Prompt",
   //   value: "custom-prompt",
   // },
 ];
+
+// Add this to your transformation prompts handler
+export function getTransformationPrompt(type: string): string {
+  switch (type) {
+    case "linkedin-post":
+      return "Return a concise, engaging LinkedIn post based on the transcription. The tone should be professional but informal, suitable for a founder or working professional audience. Highlight key insights, personal takeaways, or frameworks. Use short paragraphs and avoid hashtags unless contextually meaningful.";
+    // ... other cases
+    default:
+      return "";
+  }
+}
