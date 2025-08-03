@@ -431,7 +431,7 @@ export default function TranscriptionPageClient({ id }: { id: string }) {
             <span>Copy</span>
           </button>
           <Link
-            href="/whispers"
+            href="/main/ideas"
             className="flex-1 py-2 rounded-lg border border-slate-200 bg-white text-[#364153] font-medium flex items-center justify-center gap-2"
           >
             <img src="/new.svg" className="size-5 min-w-5 min-h-5" />

@@ -25,6 +25,8 @@ import { useLimits } from "./hooks/useLimits";
 interface RecordingModalProps {
   onClose: () => void;
   title?: string;
+  maxDuration?: number;
+  onRecordingComplete?: (duration: number) => void;
 }
 
 // Extend the Window interface
@@ -35,8 +37,13 @@ declare global {
   }
 }
 
-export function RecordingModal({ onClose }: RecordingModalProps) {
+export function RecordingModal({
+  onClose,
+  onRecordingComplete,
+  maxDuration,
+}: RecordingModalProps) {
   const [language, setLanguage] = useLocalStorage("language", "en");
+  const [showMaxDurationWarning, setShowMaxDurationWarning] = useState(false);
 
   const { uploadToS3 } = useS3Upload();
 
@@ -71,13 +78,36 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
   >("idle");
   const [pendingSave, setPendingSave] = useState(false);
 
+  // Auto-stop recording when maxDuration is reached
+  useEffect(() => {
+    if (recording && maxDuration && duration >= maxDuration) {
+      toast.warning(`Recording stopped: ${maxDuration} second limit reached`);
+      stopRecording();
+      setPendingSave(true);
+    }
+  }, [recording, duration, maxDuration, stopRecording]);
+
+  // Show warning when approaching max duration
+  useEffect(() => {
+    if (
+      recording &&
+      maxDuration &&
+      duration >= maxDuration - 10 &&
+      duration < maxDuration
+    ) {
+      if (!showMaxDurationWarning) {
+        setShowMaxDurationWarning(true);
+        toast.warning(`Warning: ${maxDuration - duration} seconds remaining`);
+      }
+    }
+  }, [recording, duration, maxDuration, showMaxDurationWarning]);
+
   // Check microphone permission on mount
   useEffect(() => {
     if (typeof window !== "undefined" && navigator.permissions) {
       navigator.permissions
         .query({ name: "microphone" as PermissionName })
         .then((result) => {
-          // setMicPermission(result.state as "granted" | "denied" | "prompt");
           result.onchange = () => {};
         });
     }
@@ -94,6 +124,7 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
       toast.error("No audio to save. Please record something first.");
       return;
     }
+
     setIsProcessing("uploading");
     try {
       // Upload to S3
@@ -101,7 +132,6 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
         type: "audio/webm",
       });
       const { url } = await uploadToS3(file);
-      // Call tRPC mutation
 
       setIsProcessing("transcribing");
 
@@ -110,10 +140,17 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
         language,
         durationSeconds: duration,
       });
+
+      // Call the callback to update daily usage
+      if (onRecordingComplete) {
+        onRecordingComplete(duration);
+      }
+
       // Invalidate dashboard query
       await queryClient.invalidateQueries({
         queryKey: trpc.whisper.listWhispers.queryKey(),
       });
+
       // Redirect to whisper page
       router.push(`/main/ideas/${id}`);
     } catch (err) {
@@ -129,6 +166,19 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
       handleSaveRecording();
     }
   }, [pendingSave, audioBlob]);
+
+  const handleStartRecording = () => {
+    if (maxDuration && maxDuration <= 0) {
+      toast.error(
+        "No recording time remaining today. Please upgrade your plan."
+      );
+      onClose();
+      return;
+    }
+
+    setShowMaxDurationWarning(false);
+    startRecording();
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -162,6 +212,13 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
                   language={language}
                   setLanguage={setLanguage}
                 />
+                {maxDuration && maxDuration < 60 && (
+                  <div className="px-5 py-2 bg-yellow-50 border-t border-yellow-200 w-full">
+                    <p className="text-sm text-yellow-800 text-center">
+                      Recording limited to {maxDuration} seconds (free plan)
+                    </p>
+                  </div>
+                )}
               </>
             ) : (
               <div className="flex flex-row gap-8 mt-8">
@@ -178,11 +235,19 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
                 <div className="flex flex-col gap-1">
                   <p className="text-base text-center text-[#364153]">
                     {formatTime(duration)}
+                    {maxDuration && ` / ${formatTime(maxDuration)}`}
                   </p>
                   <AudioWaveform
                     analyserNode={analyserNode}
                     isPaused={paused}
                   />
+                  {maxDuration &&
+                    duration >= maxDuration - 10 &&
+                    duration < maxDuration && (
+                      <p className="text-xs text-red-600 text-center mt-1">
+                        {maxDuration - duration}s remaining
+                      </p>
+                    )}
                 </div>
 
                 {/* Pause/Resume Button */}
@@ -218,7 +283,7 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
                   stopRecording();
                   setPendingSave(true);
                 } else {
-                  startRecording();
+                  handleStartRecording();
                 }
               }}
               disabled={isProcessing !== "idle"}
@@ -250,7 +315,6 @@ export function RecordingModal({ onClose }: RecordingModalProps) {
                     }
                   />
                 )}
-                {/* No Save button, processing is automatic */}
               </div>
             )}
           </div>

@@ -5,17 +5,35 @@ import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { ModalCustomApiKey } from "./hooks/ModalCustomApiKey";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser, useClerk } from "@clerk/nextjs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export function AuthHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const [mounted, setMounted] = useState<boolean>(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.push("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      // Fallback: still redirect even if signOut fails
+      router.push("/");
+    }
+  };
 
   const isSingleWhisperPage =
     pathname.startsWith("/main/ideas/") && pathname.length > 11;
@@ -55,40 +73,41 @@ export function AuthHeader() {
         </Link>
       )}
       <div className="flex items-center gap-2">
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: {
-                img: "rounded-[8px]",
-              },
-            },
-          }}
-        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="p-0 rounded-full">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: {
+                      img: "rounded-[8px]",
+                    },
+                    userButtonTrigger: {
+                      "&:focus": {
+                        boxShadow: "none",
+                      },
+                    },
+                  },
+                }}
+              />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => router.push("/main/profile")}>
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/main/settings")}>
+              Settings
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={() => router.push("/main/pricing")}>
+              Upgrade Plan
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <ModalCustomApiKey />
     </header>
-  );
-}
-
-function KeyButton() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const handleClick = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("customKey", "true");
-    const newUrl = params.toString() ? `${pathname}?${params}` : pathname;
-    router.push(newUrl);
-  };
-
-  return (
-    <Button
-      variant="ghost"
-      className="p-[7px] size-[30px] min-w-[30px] min-h-[30px] rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
-      onClick={handleClick}
-    >
-      <img src="/key.svg" className="min-w-4 min-h-4 size-4" alt="Key" />
-    </Button>
   );
 }
