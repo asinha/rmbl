@@ -1,7 +1,7 @@
 "use client";
 
 import PaymentPage from "@/components/PaymentPage";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +61,7 @@ const availableCoupons: Record<
   },
 };
 
-export default function PaymentPortalPage() {
+function PaymentPortalContent() {
   const searchParams = useSearchParams();
 
   // Get plan from URL parameters, default to 'monthly'
@@ -236,5 +236,32 @@ export default function PaymentPortalPage() {
         />
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense fallback
+function PaymentPortalLoading() {
+  return (
+    <div className="container mx-auto py-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded mb-8"></div>
+          <div className="bg-gray-50 rounded-lg p-6 mb-8">
+            <div className="h-6 bg-gray-200 rounded mb-2"></div>
+            <div className="h-6 bg-gray-200 rounded mb-2"></div>
+            <div className="h-8 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PaymentPortalPage() {
+  return (
+    <Suspense fallback={<PaymentPortalLoading />}>
+      <PaymentPortalContent />
+    </Suspense>
   );
 }
