@@ -2,15 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-interface UpgradePageProps {
-  // Optional props if you want to customize the messaging
-  limitMessage?: string;
-  showBackButton?: boolean;
-}
-
-export default function UpgradePage({
-  showBackButton = true,
-}: UpgradePageProps) {
+export default function UpgradePage() {
   const router = useRouter();
 
   return (
@@ -155,15 +147,14 @@ export default function UpgradePage({
             {/* Footer */}
             <div className="pt-6 border-t border-gray-200">
               <div className="flex justify-center gap-4 mb-4">
-                {showBackButton && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => router.back()}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    ← Go Back
-                  </Button>
-                )}
+                <Button
+                  variant="ghost"
+                  onClick={() => router.back()}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ← Go Back
+                </Button>
+
                 <Button
                   variant="ghost"
                   onClick={() => router.push("/main/ideas")} // or wherever you want to redirect
