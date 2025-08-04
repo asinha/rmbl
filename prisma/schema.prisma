@@ -39,3 +39,89 @@ model AudioTrack {
   language             String?
   whisper              Whisper  @relation(fields: [whisperId], references: [id])
 }
+
+
+model User {
+  id                      String    @id @default(cuid())
+  email                   String    @unique
+  name                    String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  
+  // Subscription fields
+  subscriptionPlan        String    @default("free") // 'free', 'monthly', 'annual', 'lifetime'
+  subscriptionStatus      String    @default("inactive") // 'active', 'inactive', 'cancelled', 'expired'
+  subscriptionBillingCycle String? // 'monthly', 'yearly', 'once'
+  subscriptionAmount      Float?
+  subscriptionStartDate   DateTime?
+  subscriptionEndDate     DateTime?
+  stripeCustomerId        String?
+  
+  // Relations
+  transactions           Transaction[]
+  subscriptionHistory    SubscriptionHistory[]
+  
+  @@map("users")
+}
+
+model Transaction {
+  id                    String    @id @default(cuid())
+  userId                String
+  stripePaymentIntentId String    @unique
+  stripeCustomerId      String?
+  
+  // Payment details
+  amount                Float
+  currency              String    @default("usd")
+  status                String    // 'pending', 'completed', 'failed', 'refunded'
+  
+  // Plan details
+  planType              String    // 'monthly', 'annual', 'lifetime'
+  billingCycle          String    // 'monthly', 'yearly', 'once'
+  originalPrice         Float?
+  finalPrice            Float
+  
+  // Coupon information
+  couponCode            String?
+  discountAmount        Float     @default(0)
+  discountType          String?   // 'percentage', 'fixed'
+  
+  // Metadata as JSON
+  metadata              Json?
+  
+  // Timestamps
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  paymentDate           DateTime?
+  
+  // Relations
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionHistory   SubscriptionHistory[]
+  
+  @@map("transactions")
+}
+
+model SubscriptionHistory {
+  id            String    @id @default(cuid())
+  userId        String
+  transactionId String?
+  
+  // Subscription details
+  planType      String
+  status        String    // 'active', 'cancelled', 'expired', 'paused'
+  billingCycle  String?
+  amount        Float?
+  
+  // Dates
+  startDate     DateTime
+  endDate       DateTime?
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  
+  @@map("subscription_history")
+}

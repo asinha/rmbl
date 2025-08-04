@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TRPCReactProvider } from "@/trpc/client";
 import { TogetherApiKeyProvider } from "@/components/TogetherApiKeyProvider";
 import PlausibleProvider from "next-plausible";
+import { ReduxProvider } from "@/components/providers/ReduxProvider";
 
 const raleway = Raleway({
   variable: "--font-raleway",
@@ -36,12 +37,14 @@ export default function RootLayout({
             <head>
               <PlausibleProvider domain="usewhisper.io" />
             </head>
-            <body className={`${raleway.variable} antialiased`}>
-              <div className="min-h-screen bg-white flex flex-col">
-                {children}
-                <Toaster richColors />
-              </div>
-            </body>
+            <ReduxProvider>
+              <body className={`${raleway.variable} antialiased`}>
+                <div className="min-h-screen bg-white flex flex-col">
+                  {children}
+                  <Toaster richColors />
+                </div>
+              </body>
+            </ReduxProvider>
           </html>
         </TRPCReactProvider>
       </TogetherApiKeyProvider>
