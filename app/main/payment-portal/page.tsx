@@ -9,21 +9,21 @@ import { Input } from "@/components/ui/input";
 // Define plan configurations
 const planConfigs = {
   monthly: {
-    price: 9.99,
+    price: 0.99,
     title: "Monthly Plan",
     description: "Unlimited recording time and premium features",
     billing_cycle: "monthly",
     supportsCoupons: false,
   },
   annual: {
-    price: 99.99,
+    price: 19.99,
     title: "Annual Plan",
     description: "Unlimited recording time and premium features (Save 17%)",
     billing_cycle: "yearly",
     supportsCoupons: true,
   },
   lifetime: {
-    price: 299,
+    price: 99,
     title: "Lifetime Plan",
     description: "All features plus priority support and advanced analytics",
     billing_cycle: "once",

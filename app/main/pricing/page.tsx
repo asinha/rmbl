@@ -30,7 +30,7 @@ export default function UpgradePage() {
                     Monthly Plan
                   </h3>
                   <span className="text-2xl font-bold text-gray-900">
-                    $9.99/mo
+                    $0.99/mo
                   </span>
                 </div>
                 <ul className="text-gray-600 space-y-2 mb-6">
@@ -70,7 +70,7 @@ export default function UpgradePage() {
                   </h3>
                   <div className="text-right">
                     <span className="text-2xl font-bold text-gray-900">
-                      $99/year
+                      $19/year
                     </span>
                     <div className="text-sm text-green-600 font-medium">
                       Save 17%
@@ -111,7 +111,7 @@ export default function UpgradePage() {
                   <h3 className="text-xl font-semibold text-gray-900">
                     Lifetime Plan
                   </h3>
-                  <span className="text-2xl font-bold text-gray-900">$299</span>
+                  <span className="text-2xl font-bold text-gray-900">$99</span>
                 </div>
                 <ul className="text-gray-600 space-y-2 mb-6">
                   <li className="flex items-center">
