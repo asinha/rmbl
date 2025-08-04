@@ -152,14 +152,14 @@ function PaymentSuccessContent() {
 
         <div className="space-y-3">
           <Button
-            onClick={() => router.push("/main")}
+            onClick={() => router.push("/main/ideas")}
             className="w-full bg-green-600 hover:bg-green-700"
           >
             Go to Dashboard
           </Button>
           <Button
             variant="outline"
-            onClick={() => router.push("/main/account")}
+            onClick={() => router.push("/main/settings")}
             className="w-full"
           >
             View Account Settings
