@@ -1,27 +1,24 @@
-// app/api/subscription/usage/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { PrismaClient } from "@/lib/generated/prisma";
 
 const prisma = new PrismaClient();
 
-interface UsageRecord {
-  date: string;
-  usedSeconds: number;
-}
 export async function GET() {
   try {
     const { userId } = await auth();
-
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Find user by Clerk userId
-    const user = await prisma.user.findUnique({
-      where: { id: userId }, // Assuming you store Clerk ID as clerkId
+    // Ensure user exists
+    let user = await prisma.user.findUnique({
+      where: { id: userId },
       select: {
         id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
         subscriptionPlan: true,
         subscriptionStatus: true,
         subscriptionBillingCycle: true,
@@ -30,41 +27,71 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      const clerkData = await currentUser();
+      user = await prisma.user.create({
+        data: {
+          id: userId,
+          firstName: clerkData?.firstName || "",
+          lastName: clerkData?.lastName || "",
+          email: clerkData?.emailAddresses[0]?.emailAddress || "",
+          subscriptionPlan: "free",
+          subscriptionStatus: "active",
+          subscriptionBillingCycle: "none",
+          subscriptionEndDate: null,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          subscriptionPlan: true,
+          subscriptionStatus: true,
+          subscriptionBillingCycle: true,
+          subscriptionEndDate: true,
+        },
+      });
     }
 
-    // Get today's date for usage calculation
-    const today = new Date().toISOString().split("T")[0];
-
-    // Get daily usage for today
-    const todayUsage = await prisma.dailyUsage.findUnique({
-      where: {
-        userId_date: {
-          userId: user.id,
-          date: today,
-        },
-      },
-    });
-
-    // Get subscription limits based on plan
-    const subscription = await prisma.subscription.findUnique({
+    // Ensure subscription exists
+    let subscription = await prisma.subscription.findUnique({
       where: { userId: user.id },
     });
+    if (!subscription) {
+      subscription = await prisma.subscription.create({
+        data: {
+          userId: user.id,
+          plan: "free",
+          recordingLimit: 60, // seconds
+        },
+      });
+    }
 
+    // Today's usage (auto-create if missing)
+    const today = new Date().toISOString().split("T")[0];
+    let todayUsage = await prisma.dailyUsage.findUnique({
+      where: { userId_date: { userId: user.id, date: today } },
+    });
+
+    if (!todayUsage) {
+      todayUsage = await prisma.dailyUsage.create({
+        data: { userId: user.id, date: today, usedSeconds: 0 },
+      });
+    }
+
+    // Usage calculations
     const userPlan = user.subscriptionPlan || "free";
-    const recordingLimit = subscription?.recordingLimit || 60; // Default 60 seconds for free
-    const usedSeconds = todayUsage?.usedSeconds || 0;
+    const recordingLimit = subscription.recordingLimit || 60;
+    const usedSeconds = todayUsage.usedSeconds;
     const remainingSeconds = Math.max(0, recordingLimit - usedSeconds);
 
-    // Calculate subscription status
+    // Subscription status
     let subscriptionActive = false;
-    let daysUntilExpiry = null;
+    let daysUntilExpiry: number | null = null;
 
     if (user.subscriptionEndDate) {
       const expiryDate = new Date(user.subscriptionEndDate);
       const currentDate = new Date();
       subscriptionActive = expiryDate > currentDate;
-
       if (subscriptionActive) {
         const timeDiff = expiryDate.getTime() - currentDate.getTime();
         daysUntilExpiry = Math.ceil(timeDiff / (1000 * 3600 * 24));
@@ -73,20 +100,16 @@ export async function GET() {
       subscriptionActive = true;
     }
 
-    // Get recent usage history (last 7 days)
+    // Last 7 days usage
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const recentUsage = await prisma.dailyUsage.findMany({
       where: {
         userId: user.id,
-        date: {
-          gte: sevenDaysAgo.toISOString().split("T")[0],
-        },
+        date: { gte: sevenDaysAgo.toISOString().split("T")[0] },
       },
-      orderBy: {
-        date: "desc",
-      },
+      orderBy: { date: "desc" },
     });
 
     return NextResponse.json({
@@ -100,9 +123,9 @@ export async function GET() {
         remainingToday: remainingSeconds,
         daysUntilExpiry,
         expiryDate: user.subscriptionEndDate,
-        recentUsage: recentUsage.map((usage: UsageRecord) => ({
-          date: usage.date,
-          usedSeconds: usage.usedSeconds,
+        recentUsage: recentUsage.map((u) => ({
+          date: u.date,
+          usedSeconds: u.usedSeconds,
         })),
       },
     });
@@ -112,7 +135,36 @@ export async function GET() {
       { error: "Internal server error" },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { durationSeconds } = await req.json();
+    if (!durationSeconds || durationSeconds <= 0) {
+      return NextResponse.json({ error: "Invalid duration" }, { status: 400 });
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // Update or create usage
+    await prisma.dailyUsage.upsert({
+      where: { userId_date: { userId, date: today } },
+      update: { usedSeconds: { increment: durationSeconds } },
+      create: { userId, date: today, usedSeconds: durationSeconds },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to update usage:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

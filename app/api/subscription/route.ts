@@ -1,6 +1,6 @@
 // app/api/subscription/usage/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { PrismaClient } from "@/lib/generated/prisma";
 
 const prisma = new PrismaClient();
@@ -13,11 +13,14 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Find user by Clerk userId
-    const user = await prisma.user.findUnique({
-      where: { id: userId }, // Assuming you store Clerk ID as clerkId
+    // Try to find user in DB
+    let user = await prisma.user.findUnique({
+      where: { id: userId }, // Or clerkId if you store it separately
       select: {
         id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
         subscriptionPlan: true,
         subscriptionStatus: true,
         subscriptionBillingCycle: true,
@@ -25,11 +28,50 @@ export async function GET() {
       },
     });
 
+    // If no user exists, create one from Clerk data
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      const clerkData = await currentUser();
+
+      user = await prisma.user.create({
+        data: {
+          id: userId,
+          firstName: clerkData?.firstName || "",
+          lastName: clerkData?.lastName || "",
+          email: clerkData?.emailAddresses[0]?.emailAddress || "",
+          subscriptionPlan: "free",
+          subscriptionStatus: "active",
+          subscriptionBillingCycle: "none",
+          subscriptionEndDate: null,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          subscriptionPlan: true,
+          subscriptionStatus: true,
+          subscriptionBillingCycle: true,
+          subscriptionEndDate: true,
+        },
+      });
     }
 
-    // Get today's date for usage calculation
+    // Ensure subscription exists for this user
+    let subscription = await prisma.subscription.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (!subscription) {
+      subscription = await prisma.subscription.create({
+        data: {
+          userId: user.id,
+          plan: "free",
+          recordingLimit: 60, // Default limit
+        },
+      });
+    }
+
+    // Today's date for usage lookup
     const today = new Date().toISOString().split("T")[0];
 
     // Get daily usage for today
@@ -42,19 +84,15 @@ export async function GET() {
       },
     });
 
-    // Get subscription limits based on plan
-    const subscription = await prisma.subscription.findUnique({
-      where: { userId: user.id },
-    });
-
+    // Usage calculations
     const userPlan = user.subscriptionPlan || "free";
-    const recordingLimit = subscription?.recordingLimit || 60; // Default 60 seconds for free
+    const recordingLimit = subscription?.recordingLimit || 60;
     const usedSeconds = todayUsage?.usedSeconds || 0;
     const remainingSeconds = Math.max(0, recordingLimit - usedSeconds);
 
-    // Calculate subscription status
+    // Subscription status
     let subscriptionActive = false;
-    let daysUntilExpiry = null;
+    let daysUntilExpiry: number | null = null;
 
     if (user.subscriptionEndDate) {
       const expiryDate = new Date(user.subscriptionEndDate);
@@ -69,7 +107,7 @@ export async function GET() {
       subscriptionActive = true;
     }
 
-    // Get recent usage history (last 7 days)
+    // Get recent usage (last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -96,7 +134,7 @@ export async function GET() {
         remainingToday: remainingSeconds,
         daysUntilExpiry,
         expiryDate: user.subscriptionEndDate,
-        recentUsage: recentUsage.map((usage: any) => ({
+        recentUsage: recentUsage.map((usage) => ({
           date: usage.date,
           usedSeconds: usage.usedSeconds,
         })),
