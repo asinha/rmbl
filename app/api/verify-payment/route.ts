@@ -1,13 +1,15 @@
+// app/api/verify-payment/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerStripe } from "@/lib/stripe";
 import { PrismaClient, Prisma } from "@/lib/generated/prisma";
+import Stripe from "stripe";
 
 const prisma = new PrismaClient();
 const stripe = getServerStripe();
 
 export async function POST(request: NextRequest) {
   try {
-    const { payment_intent, redirect_status } = await request.json();
+    const { payment_intent } = await request.json();
 
     if (!payment_intent) {
       return NextResponse.json(
@@ -16,8 +18,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Retrieve the payment intent from Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent);
+    // ✅ Retrieve payment intent with charges expanded
+    const paymentIntent = (await stripe.paymentIntents.retrieve(
+      payment_intent,
+      {
+        expand: ["charges"],
+      }
+    )) as unknown as Stripe.PaymentIntent & {
+      charges: Stripe.ApiList<Stripe.Charge>;
+    };
 
     if (paymentIntent.status !== "succeeded") {
       return NextResponse.json(
@@ -26,27 +35,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract metadata from the payment intent
-    const metadata = paymentIntent.metadata;
-    const {
-      customer_email,
-      plan_type,
-      billing_cycle,
-      original_price,
-      final_price,
-      coupon_code,
-    } = metadata;
+    // ✅ Extract metadata
+    const metadata = paymentIntent.metadata || {};
+    const customerEmail = metadata.customer_email || "";
+    const plan_type = metadata.plan_type || "free";
+    const billing_cycle = metadata.billing_cycle || "once";
+    const original_price = metadata.original_price || "";
+    const final_price = metadata.final_price || "0";
+    const coupon_code = metadata.coupon_code || "";
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: customer_email },
-    });
+    // ✅ Find user by email or Stripe customer ID
+    let user = null;
+    if (customerEmail) {
+      user = await prisma.user.findUnique({ where: { email: customerEmail } });
+    } else if (paymentIntent.customer) {
+      user = await prisma.user.findUnique({
+        where: { stripeCustomerId: paymentIntent.customer as string },
+      });
+    }
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check if transaction already exists
+    // ✅ Check if transaction already exists
     const existingTransaction = await prisma.transaction.findUnique({
       where: { stripePaymentIntentId: payment_intent },
     });
@@ -56,15 +68,15 @@ export async function POST(request: NextRequest) {
         success: true,
         payment_id: payment_intent,
         amount: final_price,
-        plan_type: plan_type,
-        billing_cycle: billing_cycle,
-        customer_email: customer_email,
+        plan_type,
+        billing_cycle,
+        customer_email: customerEmail,
         coupon_code: coupon_code || null,
         message: "Payment already processed",
       });
     }
 
-    // Calculate subscription dates
+    // ✅ Calculate subscription dates
     const startDate = new Date();
     let endDate: Date | null = null;
 
@@ -75,68 +87,63 @@ export async function POST(request: NextRequest) {
       endDate = new Date(startDate);
       endDate.setFullYear(endDate.getFullYear() + 1);
     }
-    // lifetime has no end date
 
-    // Calculate discount amount
+    // ✅ Calculate discount
     let discountAmount = 0;
     let discountType: string | null = null;
 
     if (coupon_code && original_price && final_price) {
       discountAmount = parseFloat(original_price) - parseFloat(final_price);
-      // You could determine discount type from your coupon logic
       discountType = discountAmount > 0 ? "fixed" : null;
     }
 
-    // Start database transaction
+    // ✅ Save transaction + update user
     const result = await prisma.$transaction(
       async (tx: Prisma.TransactionClient) => {
-        // Create transaction record
         const transaction = await tx.transaction.create({
           data: {
-            userId: user.id,
+            userId: user!.id,
             stripePaymentIntentId: payment_intent,
             stripeCustomerId: (paymentIntent.customer as string) || null,
-            amount: parseFloat(final_price),
+            amount: parseFloat(final_price || "0"),
             currency: paymentIntent.currency,
             status: "completed",
             planType: plan_type,
             billingCycle: billing_cycle,
             originalPrice: original_price ? parseFloat(original_price) : null,
-            finalPrice: parseFloat(final_price),
+            finalPrice: parseFloat(final_price || "0"),
             couponCode: coupon_code || null,
-            discountAmount: discountAmount,
-            discountType: discountType,
-            metadata: metadata,
+            discountAmount,
+            discountType,
+            metadata,
             paymentDate: new Date(),
           },
         });
 
-        // Update user subscription
         const updatedUser = await tx.user.update({
-          where: { id: user.id },
+          where: { id: user!.id },
           data: {
             subscriptionPlan: plan_type,
             subscriptionStatus: "active",
             subscriptionBillingCycle: billing_cycle,
-            subscriptionAmount: parseFloat(final_price),
+            subscriptionAmount: parseFloat(final_price || "0"),
             subscriptionStartDate: startDate,
             subscriptionEndDate: endDate,
             stripeCustomerId:
-              (paymentIntent.customer as string) || user.stripeCustomerId,
+              (paymentIntent.customer as string) || user!.stripeCustomerId,
           },
         });
 
-        // Create subscription history entry
         await tx.subscriptionHistory.create({
           data: {
-            userId: user.id,
+            userId: user!.id,
             transactionId: transaction.id,
             planType: plan_type,
             status: "active",
             billingCycle: billing_cycle,
-            amount: parseFloat(final_price),
-            startDate: startDate,
-            endDate: endDate,
+            amount: parseFloat(final_price || "0"),
+            startDate,
+            endDate,
           },
         });
 
@@ -144,20 +151,13 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // TODO: Send confirmation email
-    // await sendConfirmationEmail(customer_email, result.transaction);
-
-    // TODO: Trigger webhook for third-party integrations
-    // await triggerWebhook('subscription.activated', result.updatedUser);
-
-    // Return success response with payment details
     return NextResponse.json({
       success: true,
       payment_id: payment_intent,
       amount: final_price,
-      plan_type: plan_type,
-      billing_cycle: billing_cycle,
-      customer_email: customer_email,
+      plan_type,
+      billing_cycle,
+      customer_email: customerEmail,
       coupon_code: coupon_code || null,
       transaction_id: result.transaction.id,
       subscription_start_date: startDate.toISOString(),
@@ -166,7 +166,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Payment verification error:", error);
-
     return NextResponse.json(
       {
         error: "Failed to verify payment",

@@ -304,7 +304,7 @@ export function RecordingModal({
               )}
             </Button>
 
-            {!recording && (
+            {/* {!recording && (
               <div className="w-full flex flex-col py-3 px-5 border-t border-gray-200">
                 {isLoading ? (
                   <span className="text-sm text-[#4a5565]">Loading...</span>
@@ -316,7 +316,7 @@ export function RecordingModal({
                   />
                 )}
               </div>
-            )}
+            )} */}
           </div>
         )}
       </DialogContent>

@@ -1,108 +1,114 @@
-// pages/checkout.tsx or components/PaymentPage.tsx
-import React, { useState, useEffect } from "react";
-import { Elements } from "@stripe/react-stripe-js";
-import { getStripe } from "../lib/stripe";
-import CheckoutForm from "./CheckoutForm";
+"use client";
+
+import { useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  useStripe,
+  useElements,
+  PaymentElement,
+} from "@stripe/react-stripe-js";
+import { Button } from "@/components/ui/button";
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 interface PaymentPageProps {
   amount: number;
-  currency?: string;
-  metadata?: Record<string, string>;
-  customerEmail?: string;
+  currency: string;
+  metadata: Record<string, string>;
+  customerEmail: string;
 }
 
 export default function PaymentPage({
   amount,
-  currency = "usd",
-  metadata = {},
+  currency,
+  metadata,
+  customerEmail,
 }: PaymentPageProps) {
-  const [clientSecret, setClientSecret] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const createPaymentIntent = async () => {
-      try {
-        const response = await fetch("/api/create-payment-intent", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount,
-            currency,
-            metadata,
-          }),
-        });
+  const createPaymentIntent = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount,
+          currency,
+          metadata,
+          customer_email: customerEmail, // ✅ Always send email
+        }),
+      });
 
-        const data = await response.json();
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.error || "Failed to create payment intent");
 
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to create payment intent");
-        }
-
-        setClientSecret(data.clientSecret);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (amount > 0) {
-      createPaymentIntent();
+      setClientSecret(data.clientSecret);
+    } catch (err) {
+      console.error("Error creating payment intent:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [amount, currency, metadata]);
-
-  const appearance = {
-    theme: "stripe" as const,
   };
-
-  const options = {
-    clientSecret,
-    appearance,
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-red-50 border border-red-200 rounded-md">
-        <p className="text-red-800">Error: {error}</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Complete Payment</h2>
-
-      <div className="mb-4 p-4 bg-gray-50 rounded-md">
-        <p className="text-lg font-semibold">
-          Total: ${amount.toFixed(2)} {currency.toUpperCase()}
-        </p>
-      </div>
-
-      {clientSecret && (
-        <Elements options={options} stripe={getStripe()}>
-          <CheckoutForm
-            onSuccess={() => {
-              console.log("Payment successful!");
-              // Handle successful payment
-            }}
-            onError={(error) => {
-              console.error("Payment failed:", error);
-              // Handle payment error
-            }}
-          />
+    <div className="mt-4">
+      {!clientSecret ? (
+        <Button
+          onClick={createPaymentIntent}
+          disabled={loading || !customerEmail}
+          className="bg-green-600 hover:bg-green-700"
+        >
+          {loading ? "Processing..." : "Proceed to Payment"}
+        </Button>
+      ) : (
+        <Elements stripe={stripePromise} options={{ clientSecret }}>
+          <CheckoutForm clientSecret={clientSecret} />
         </Elements>
       )}
     </div>
+  );
+}
+
+function CheckoutForm({ clientSecret }: { clientSecret: string }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setSubmitting(true);
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/main/payment-success`,
+      },
+    });
+
+    if (error) {
+      console.error(error.message);
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <PaymentElement />
+      <Button
+        type="submit"
+        disabled={!stripe || submitting}
+        className="bg-blue-600 hover:bg-blue-700 w-full"
+      >
+        {submitting ? "Processing..." : "Pay Now"}
+      </Button>
+    </form>
   );
 }
