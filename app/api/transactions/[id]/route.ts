@@ -6,11 +6,12 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const transaction = await prisma.transaction.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         user: {
           select: { email: true, firstName: true, lastName: true },
@@ -39,13 +40,14 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const updateData = await request.json();
 
     const transaction = await prisma.transaction.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         ...updateData,
         updatedAt: new Date(),
