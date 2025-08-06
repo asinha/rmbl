@@ -50,7 +50,7 @@ export function AuthHeader() {
   const userEmail = user?.primaryEmailAddress?.emailAddress;
 
   return (
-    <header className="min-h-[63px] flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
+    <header className="sticky top-0 z-50 min-h-[63px] flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
       {isSingleWhisperPage ? (
         <Link href="/main/ideas/" className="flex items-center gap-2">
           <img
