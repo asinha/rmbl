@@ -8,6 +8,7 @@ interface PaymentPageProps {
   amount: number;
   currency?: string;
   metadata?: Record<string, string>;
+  customerEmail?: string;
 }
 
 export default function PaymentPage({

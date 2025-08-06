@@ -44,7 +44,8 @@ model AudioTrack {
 model User {
   id                      String    @id @default(cuid())
   email                   String    @unique
-  name                    String?
+  firstName               String?
+  lastName               String?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
   
@@ -124,4 +125,72 @@ model SubscriptionHistory {
   transaction   Transaction? @relation(fields: [transactionId], references: [id])
   
   @@map("subscription_history")
+}
+
+model CouponUsage {
+  id          String   @id @default(cuid())
+  userId      String
+  couponCode  String
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([couponCode])
+}
+
+model CouponValidation {
+  id              String   @id @default(cuid())
+  userId          String
+  couponCode      String
+  planType        String
+  originalPrice   Float
+  discountedPrice Float
+  successful      Boolean
+  ipAddress       String
+  userAgent       String
+  errorMessage    String?
+  createdAt       DateTime @default(now())
+}
+
+model Subscription {
+  id             String     @id @default(cuid())
+  userId         String     @unique
+  plan           String     @default("free") // e.g., "free", "pro", "premium"
+  recordingLimit Int        @default(60) // in seconds
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model DailyUsage {
+  id          String   @id @default(cuid())
+  userId      String
+  date        String   // Format: "YYYY-MM-DD"
+  usedSeconds Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+model Transcription {
+  id          String   @id @default(cuid())
+  userId      String
+  content     String
+  language    String?
+  confidence  Float?
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+}
+
+model RecordingLog {
+  id          String   @id @default(cuid())
+  userId      String
+  duration    Int      // in seconds
+  plan        String
+  timestamp   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([timestamp])
 }

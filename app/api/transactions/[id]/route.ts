@@ -1,6 +1,6 @@
 // app/api/transactions/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/lib/generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +13,7 @@ export async function GET(
       where: { id: params.id },
       include: {
         user: {
-          select: { email: true, name: true },
+          select: { email: true, firstName: true, lastName: true },
         },
       },
     });
@@ -52,7 +52,7 @@ export async function PUT(
       },
       include: {
         user: {
-          select: { email: true, name: true },
+          select: { email: true, firstName: true, lastName: true },
         },
       },
     });
