@@ -5,13 +5,36 @@ import Head from "next/head";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import FeatureCard from "./ui/FeatureCard";
+import {
+  Mic,
+  FileText,
+  Mail,
+  List,
+  Timer,
+  Tag,
+  Brain,
+  TrendingUp,
+  Zap,
+  Archive,
+  ArrowRight,
+  Sparkles,
+  CheckCircle,
+  Award,
+} from "lucide-react";
 
 export function LandingPage() {
   const { user } = useUser();
 
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById("features-section");
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const features = [
     {
-      icon: "mic_none",
+      icon: Mic,
       iconColor: "text-blue-500",
       bgColor: "bg-blue-100",
       badge: "Core",
@@ -20,7 +43,7 @@ export function LandingPage() {
         "One click to start recording. No setup, no complexity. Just speak your mind.",
     },
     {
-      icon: "description",
+      icon: FileText,
       iconColor: "text-purple-500",
       bgColor: "bg-purple-100",
       badge: "AI Powered",
@@ -29,7 +52,7 @@ export function LandingPage() {
         "Your voice becomes text in real-time. Perfect accuracy, every time.",
     },
     {
-      icon: "email",
+      icon: Mail,
       iconColor: "text-green-500",
       bgColor: "bg-green-100",
       badge: "Transform",
@@ -38,7 +61,7 @@ export function LandingPage() {
         "Transform your rambling thoughts into professional emails instantly.",
     },
     {
-      icon: "list_alt",
+      icon: List,
       iconColor: "text-yellow-500",
       bgColor: "bg-yellow-100",
       badge: "Transform",
@@ -47,7 +70,7 @@ export function LandingPage() {
         "Turn your ideas into organized lists and action items automatically.",
     },
     {
-      icon: "timer",
+      icon: Timer,
       iconColor: "text-red-500",
       bgColor: "bg-red-100",
       badge: "Freemium",
@@ -56,7 +79,7 @@ export function LandingPage() {
         "Free tier: 1 minute recordings. Pro: unlimited thinking time.",
     },
     {
-      icon: "label",
+      icon: Tag,
       iconColor: "text-indigo-500",
       bgColor: "bg-indigo-100",
       badge: "Organization",
@@ -65,7 +88,7 @@ export function LandingPage() {
         "Organize thoughts with Work, Personal, Meeting, and Idea tags.",
     },
     {
-      icon: "psychology",
+      icon: Brain,
       iconColor: "text-pink-500",
       bgColor: "bg-pink-100",
       badge: "Core",
@@ -74,7 +97,7 @@ export function LandingPage() {
         "Build a repository of your thoughts. Search, recall, and reuse insights.",
     },
     {
-      icon: "insights",
+      icon: TrendingUp,
       iconColor: "text-teal-500",
       bgColor: "bg-teal-100",
       badge: "Analytics",
@@ -83,7 +106,7 @@ export function LandingPage() {
         "See patterns in your thinking. Track your most productive ideas.",
     },
     {
-      icon: "flash_on",
+      icon: Zap,
       iconColor: "text-yellow-600",
       bgColor: "bg-yellow-400 bg-opacity-30",
       badge: "Productivity",
@@ -92,7 +115,7 @@ export function LandingPage() {
         "Perfect for busy professionals. Capture now, process later.",
     },
     {
-      icon: "inventory_2",
+      icon: Archive,
       iconColor: "text-blue-500",
       bgColor: "bg-blue-100",
       badge: "Storage",
@@ -132,7 +155,7 @@ export function LandingPage() {
   const pricingPlans = [
     {
       name: "Free",
-      icon: "mic_none",
+      icon: Mic,
       iconBg: "bg-gray-100",
       iconColor: "text-gray-500",
       price: "$0",
@@ -155,7 +178,7 @@ export function LandingPage() {
     },
     {
       name: "Pro",
-      icon: "workspace_premium",
+      icon: Award,
       iconBg: "bg-indigo-100",
       iconColor: "text-indigo-500",
       price: "$19",
@@ -190,10 +213,6 @@ export function LandingPage() {
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
-        <link
-          href="https://fonts.googleapis.com/icon?family=Material+Icons"
-          rel="stylesheet"
-        />
       </Head>
 
       <main className="bg-white font-sans">
@@ -218,30 +237,31 @@ export function LandingPage() {
 
             <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
               {user ? (
-                <Link href="/dashboard">
+                <Link href="/main/ideas">
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-indigo-600 to-purple-500 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:opacity-90"
                   >
-                    <span className="material-icons mr-2">mic</span>
+                    <Mic className="mr-2 h-5 w-5" />
                     Start RMBLing
-                    <span className="material-icons ml-2">arrow_forward</span>
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
               ) : (
-                <SignInButton>
+                <Link href="/auth/login">
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-indigo-600 to-purple-500 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:opacity-90"
                   >
-                    <span className="material-icons mr-2">mic</span>
+                    <Mic className="mr-2 h-5 w-5" />
                     Start RMBLing
-                    <span className="material-icons ml-2">arrow_forward</span>
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                </SignInButton>
+                </Link>
               )}
 
               <Button
+                onClick={scrollToFeatures}
                 variant="outline"
                 className="bg-white text-gray-700 font-semibold py-3 px-6 rounded-lg border border-gray-300 shadow-md hover:shadow-lg transition-all hover:bg-gray-50"
               >
@@ -252,7 +272,7 @@ export function LandingPage() {
             {/* Features Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 max-w-4xl mx-auto">
               <FeatureCard
-                icon="mic"
+                icon={Mic}
                 iconColor="text-blue-500"
                 bgColor="bg-blue-100"
                 title="Quick Capture"
@@ -260,7 +280,7 @@ export function LandingPage() {
               />
 
               <FeatureCard
-                icon="auto_awesome"
+                icon={Sparkles}
                 iconColor="text-purple-500"
                 bgColor="bg-purple-100"
                 title="AI Transform"
@@ -268,7 +288,7 @@ export function LandingPage() {
               />
 
               <FeatureCard
-                icon="memory"
+                icon={Brain}
                 iconColor="text-green-500"
                 bgColor="bg-green-100"
                 title="Second Brain"
@@ -289,7 +309,7 @@ export function LandingPage() {
         </div>
 
         {/* Features Section */}
-        <div className="container mx-auto px-4 py-16">
+        <div id="features-section" className="container mx-auto px-4 py-16">
           <header className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
               Your voice, <span className="text-purple-600">amplified</span>
@@ -301,27 +321,30 @@ export function LandingPage() {
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className={`${feature.bgColor} p-2 rounded-full`}>
-                    <span className={`material-icons ${feature.iconColor}`}>
-                      {feature.icon}
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className={`${feature.bgColor} p-2 rounded-full`}>
+                      <IconComponent
+                        className={`h-6 w-6 ${feature.iconColor}`}
+                      />
+                    </div>
+                    <span className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      {feature.badge}
                     </span>
                   </div>
-                  <span className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                    {feature.badge}
-                  </span>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                    {feature.title}
+                  </h2>
+                  <p className="text-gray-600">{feature.description}</p>
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                  {feature.title}
-                </h2>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -364,88 +387,128 @@ export function LandingPage() {
           </div>
 
           <div className="flex flex-col lg:flex-row justify-center gap-8">
-            {pricingPlans.map((plan, index) => (
-              <div
-                key={index}
-                className={`bg-white rounded-xl shadow-md p-8 w-full max-w-md border ${
-                  plan.popular
-                    ? "border-2 border-indigo-500 relative"
-                    : "border-gray-200"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-sm font-semibold px-4 py-1 rounded-full">
-                    Most Popular
-                  </div>
-                )}
-
-                <div className="flex flex-col items-center">
-                  <div className={`${plan.iconBg} rounded-full p-4 mb-4`}>
-                    <span
-                      className={`material-icons ${plan.iconColor}`}
-                      style={{ fontSize: "32px" }}
-                    >
-                      {plan.icon}
-                    </span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {plan.name}
-                  </h2>
-                  <p className="text-4xl font-bold text-gray-900 mt-2">
-                    {plan.price}{" "}
-                    <span className="text-lg font-normal text-gray-500">
-                      {plan.period}
-                    </span>
-                  </p>
-                  <p className="text-gray-500 mt-2">{plan.description}</p>
-                </div>
-
-                <div className="mt-8">
-                  <ul className="space-y-3 text-gray-600">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center">
-                        <span className="material-icons text-green-500 mr-3">
-                          check_circle
-                        </span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {plan.excluded && (
-                    <div className="mt-8 border-t pt-6">
-                      <p className="text-gray-500 mb-4">Not included:</p>
-                      <ul className="space-y-3 text-gray-400">
-                        {plan.excluded.map((item, i) => (
-                          <li key={i} className="flex items-center">
-                            <div className="w-3 h-3 bg-gray-300 rounded-full mr-3"></div>
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
+            {pricingPlans.map((plan, index) => {
+              const IconComponent = plan.icon;
+              return (
+                <div
+                  key={index}
+                  className={`bg-white rounded-xl shadow-md p-8 w-full max-w-md border ${
+                    plan.popular
+                      ? "border-2 border-indigo-500 relative"
+                      : "border-gray-200"
+                  }`}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-sm font-semibold px-4 py-1 rounded-full">
+                      Most Popular
                     </div>
                   )}
-                </div>
 
-                <div className="mt-10 text-center">
-                  <Button
-                    variant={plan.buttonVariant as "default" | "outline"}
-                    className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
-                      plan.buttonClass || ""
-                    }`}
-                  >
-                    {plan.buttonText}
-                  </Button>
+                  <div className="flex flex-col items-center">
+                    <div className={`${plan.iconBg} rounded-full p-4 mb-4`}>
+                      <IconComponent className={`h-8 w-8 ${plan.iconColor}`} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      {plan.name}
+                    </h2>
+                    <p className="text-4xl font-bold text-gray-900 mt-2">
+                      {plan.price}{" "}
+                      <span className="text-lg font-normal text-gray-500">
+                        {plan.period}
+                      </span>
+                    </p>
+                    <p className="text-gray-500 mt-2">{plan.description}</p>
+                  </div>
+
+                  <div className="mt-8">
+                    <ul className="space-y-3 text-gray-600">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-center">
+                          <CheckCircle className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {plan.excluded && (
+                      <div className="mt-8 border-t pt-6">
+                        <p className="text-gray-500 mb-4">Not included:</p>
+                        <ul className="space-y-3 text-gray-400">
+                          {plan.excluded.map((item, i) => (
+                            <li key={i} className="flex items-center">
+                              <div className="w-3 h-3 bg-gray-300 rounded-full mr-3 flex-shrink-0"></div>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-10 text-center">
+                    {plan.name === "Free" ? (
+                      user ? (
+                        <Link href="/main/ideas">
+                          <Button
+                            variant={
+                              plan.buttonVariant as "default" | "outline"
+                            }
+                            className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
+                              plan.buttonClass || ""
+                            }`}
+                          >
+                            {plan.buttonText}
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link href="/auth/login">
+                          <Button
+                            variant={
+                              plan.buttonVariant as "default" | "outline"
+                            }
+                            className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
+                              plan.buttonClass || ""
+                            }`}
+                          >
+                            {plan.buttonText}
+                          </Button>
+                        </Link>
+                      )
+                    ) : // Pro plan button
+                    user ? (
+                      <Link href="/main/pricing">
+                        <Button
+                          variant={plan.buttonVariant as "default" | "outline"}
+                          className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
+                            plan.buttonClass || ""
+                          }`}
+                        >
+                          {plan.buttonText}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link href="/auth/login">
+                        <Button
+                          variant={plan.buttonVariant as "default" | "outline"}
+                          className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
+                            plan.buttonClass || ""
+                          }`}
+                        >
+                          {plan.buttonText}
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         {/* Final CTA Section */}
         <div className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center py-16 px-4">
           <div className="container mx-auto max-w-4xl p-8 rounded-lg">
             <div className="flex justify-center items-center mb-4">
-              <span className="material-icons text-4xl">flash_on</span>
+              <Zap className="h-10 w-10" />
               <h2 className="text-3xl font-bold ml-2">Ready to RMBL?</h2>
             </div>
             <p className="text-lg mb-6">
@@ -454,25 +517,25 @@ export function LandingPage() {
               Start with a free account—no credit card required.
             </p>
             {user ? (
-              <Link href="/dashboard">
+              <Link href="/main/ideas">
                 <Button
                   variant="secondary"
                   className="bg-white text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 ease-in-out flex items-center justify-center mx-auto"
                 >
-                  <span className="material-icons mr-2">mic</span>
+                  <Mic className="mr-2 h-5 w-5" />
                   Start Your First Recording
                 </Button>
               </Link>
             ) : (
-              <SignInButton>
+              <Link href="/auth/login">
                 <Button
                   variant="secondary"
                   className="bg-white text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 ease-in-out flex items-center justify-center mx-auto"
                 >
-                  <span className="material-icons mr-2">mic</span>
+                  <Mic className="mr-2 h-5 w-5" />
                   Get Started for Free
                 </Button>
-              </SignInButton>
+              </Link>
             )}
           </div>
         </div>
