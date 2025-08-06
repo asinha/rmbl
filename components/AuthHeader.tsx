@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import Link from "next/link";
@@ -10,8 +10,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Badge } from "./ui/badge";
 
 export function AuthHeader() {
   const pathname = usePathname();
@@ -30,7 +32,6 @@ export function AuthHeader() {
       router.push("/");
     } catch (error) {
       console.error("Error signing out:", error);
-      // Fallback: still redirect even if signOut fails
       router.push("/");
     }
   };
@@ -43,6 +44,10 @@ export function AuthHeader() {
       <div className="h-[63px] w-full bg-gray-50 border-b border-gray-200" />
     );
   }
+
+  // Get user's plan from metadata or default to "Free"
+  const userPlan = (user?.publicMetadata?.plan as string) || "Free";
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
 
   return (
     <header className="min-h-[63px] flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
@@ -72,7 +77,8 @@ export function AuthHeader() {
           />
         </Link>
       )}
-      <div className="flex items-center gap-2">
+
+      <div className="flex items-center gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="p-0 rounded-full">
@@ -92,14 +98,34 @@ export function AuthHeader() {
               />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => router.push("/main/profile")}>
-              Profile
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuItem className="focus:bg-transparent hover:bg-transparent cursor-default">
+              {user && (
+                <div className="flex items-center gap-3 w-full">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={user.imageUrl || "/default-avatar.png"}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {userEmail}
+                    </p>
+                    <div className="mt-1">
+                      <Badge variant="default" className="text-xs">
+                        {userPlan}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              )}
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/main/settings")}>
               Settings
             </DropdownMenuItem>
-
             <DropdownMenuItem onClick={() => router.push("/main/pricing")}>
               Upgrade Plan
             </DropdownMenuItem>

@@ -1,8 +1,6 @@
 // app/api/transactions/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-// import { getServerSession } from "next-auth/next";
-// import { authOptions } from "@/lib/auth"; // Your auth config
+import { PrismaClient } from "@/lib/generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -42,7 +40,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         include: {
           user: {
-            select: { email: true, name: true },
+            select: { email: true, firstName: true, lastName: true },
           },
         },
       }),
@@ -102,7 +100,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         user: {
-          select: { email: true, name: true },
+          select: { email: true, firstName: true, lastName: true },
         },
       },
     });

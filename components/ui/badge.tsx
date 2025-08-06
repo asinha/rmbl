@@ -1,14 +1,15 @@
-// components/ui/badge.tsx
-import { cn } from "@/lib/utils"; // If using ShadCN's utils
-import { HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
+import { HTMLAttributes, ReactNode } from "react";
 
 interface BadgeProps extends HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "secondary" | "destructive" | "outline";
+  children?: ReactNode; // Make children optional
 }
 
 export const Badge = ({
   className,
   variant = "default",
+  children,
   ...props
 }: BadgeProps) => {
   return (
@@ -27,6 +28,8 @@ export const Badge = ({
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </div>
   );
 };
