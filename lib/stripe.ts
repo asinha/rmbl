@@ -33,14 +33,13 @@
 //   return stripePromise;
 // };
 
-// lib/stripe.ts
 import Stripe from "stripe";
 import { loadStripe, Stripe as StripeJS } from "@stripe/stripe-js";
 
-// Use a stable API version instead of beta
-const STRIPE_API_VERSION = "2024-11-20.acacia" as Stripe.LatestApiVersion;
+// Set a valid API version (latest stable release)
+const STRIPE_API_VERSION = "2025-06-30.basil";
 
-// Server-side Stripe instance (only import this in API routes or server components)
+// Server-side Stripe instance
 export const getServerStripe = () => {
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -68,9 +67,6 @@ export const getStripe = () => {
   if (!stripePromise) {
     stripePromise = loadStripe(stripePublishableKey);
   }
+
   return stripePromise;
 };
-
-// DO NOT export server stripe instance here - it should only be used in API routes
-// Remove this line if you have it in your PaymentPage component:
-// export const stripe = getServerStripe();

@@ -2,7 +2,7 @@
 
 import PaymentPage from "@/components/PaymentPage";
 import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@clerk/nextjs";
@@ -53,14 +53,22 @@ function PaymentPortalLoading() {
 
 function PaymentPortalContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user, isLoaded } = useUser();
 
   // Get plan from URL parameters, default to 'monthly'
   const planParam = searchParams.get("plan") || "monthly";
 
+  // Validate and cast to proper plan type
+  const validPlanTypes = ["monthly", "annual", "lifetime"] as const;
+  type PlanType = (typeof validPlanTypes)[number];
+
+  const planType: PlanType = validPlanTypes.includes(planParam as PlanType)
+    ? (planParam as PlanType)
+    : "monthly";
+
   // Get plan configuration, fallback to monthly if invalid plan
-  const selectedPlan =
-    planConfigs[planParam as keyof typeof planConfigs] || planConfigs.monthly;
+  const selectedPlan = planConfigs[planType];
 
   // ✅ ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [couponCode, setCouponCode] = useState("");
@@ -75,7 +83,14 @@ function PaymentPortalContent() {
     setCouponCode("");
     setCouponError("");
     setFinalPrice(selectedPlan.price);
-  }, [planParam, selectedPlan.price]);
+  }, [planType, selectedPlan.price]);
+
+  // Handle redirect when user is not authenticated
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/main/sign-in");
+    }
+  }, [isLoaded, user, router]);
 
   // ✅ NOW you can have conditional returns AFTER all hooks
   if (!isLoaded) {
@@ -83,9 +98,8 @@ function PaymentPortalContent() {
   }
 
   if (!user) {
-    // Better to use Next.js router for navigation
-    window.location.href = "/main/sign-in";
-    return null;
+    // Show loading while redirecting
+    return <PaymentPortalLoading />;
   }
 
   // Use authenticated user's email
@@ -106,7 +120,7 @@ function PaymentPortalContent() {
         },
         body: JSON.stringify({
           couponCode: couponCode.toUpperCase(),
-          planType: planParam,
+          planType: planType,
           originalPrice: selectedPlan.price,
         }),
       });
@@ -150,8 +164,8 @@ function PaymentPortalContent() {
 
   // Sanitized metadata - no sensitive data
   const productMetadata: Record<string, string> = {
-    product_id: `plan_${planParam}`,
-    plan_type: planParam,
+    product_id: `plan_${planType}`,
+    plan_type: planType,
     billing_cycle: selectedPlan.billing_cycle,
     user_id: user.id,
     // Don't include actual prices or customer email in metadata
@@ -261,10 +275,12 @@ function PaymentPortalContent() {
         )}
 
         <PaymentPage
+          planType={planType}
           amount={finalPrice}
           currency="usd"
           metadata={productMetadata}
           customerEmail={customerEmail}
+          originalPrice={selectedPlan.price}
         />
       </div>
     </div>

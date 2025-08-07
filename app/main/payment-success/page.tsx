@@ -6,54 +6,101 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+interface PaymentDetails {
+  success: boolean;
+  message: string;
+  payment_id: string;
+  transaction_id: string;
+  subscription_start: string;
+  subscription_end: string | null;
+  plan_type?: string;
+  billing_cycle?: string;
+  amount?: number;
+  currency?: string;
+}
+
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  const paymentIntent = searchParams.get("payment_intent");
-  const redirectStatus = searchParams.get("redirect_status");
+  const sessionId = searchParams.get("session_id");
 
   const [isLoading, setIsLoading] = useState(true);
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const verifyPayment = async () => {
+    const verifySession = async () => {
       try {
-        if (!paymentIntent) {
-          setError("No payment information found");
+        if (!sessionId) {
+          setError("No session ID found in URL.");
           setIsLoading(false);
           return;
         }
 
-        // Call your API to verify the payment and update user subscription
-        const response = await fetch("/api/verify-payment", {
+        const res = await fetch("/api/verify-checkout-session", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            payment_intent: paymentIntent,
-            redirect_status: redirectStatus,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId }),
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to verify payment");
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(
+            errorData.error || "Failed to verify checkout session"
+          );
         }
 
-        const data = await response.json();
+        const data = await res.json();
+        console.log("Payment verification response:", data);
         setPaymentDetails(data);
       } catch (err) {
-        console.error("Payment verification error:", err);
-        setError("Failed to verify payment. Please contact support.");
+        console.error("Verification error:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to verify your payment. Please contact support."
+        );
       } finally {
         setIsLoading(false);
       }
     };
 
-    verifyPayment();
-  }, [paymentIntent, redirectStatus]);
+    verifySession();
+  }, [sessionId]);
+
+  const formatPlanType = (planType?: string) =>
+    planType
+      ? planType
+          .split("_")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")
+      : "Unknown Plan";
+
+  const formatBillingCycle = (billingCycle?: string) => {
+    switch (billingCycle) {
+      case "monthly":
+        return "Monthly";
+      case "yearly":
+        return "Yearly";
+      case "once":
+        return "One-time";
+      default:
+        return billingCycle
+          ? billingCycle.charAt(0).toUpperCase() + billingCycle.slice(1)
+          : "Unknown";
+    }
+  };
+
+  const formatDate = (dateString?: string) =>
+    dateString
+      ? new Date(dateString).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "N/A";
 
   if (isLoading) {
     return (
@@ -118,34 +165,66 @@ function PaymentSuccessContent() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
         <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
           Payment Successful!
         </h1>
-
         <p className="text-gray-600 mb-6">
-          Thank you for your purchase. Your subscription has been activated
-          successfully.
+          Thank you for your purchase. Your subscription has been activated.
         </p>
 
         {paymentDetails && (
           <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <h3 className="font-semibold text-gray-900 mb-2">
+            <h3 className="font-semibold text-gray-900 mb-3">
               Payment Details:
             </h3>
-            <div className="space-y-1 text-sm text-gray-600">
+            <div className="space-y-2 text-sm text-gray-600">
+              {paymentDetails.plan_type && (
+                <div className="flex justify-between">
+                  <span>Plan Type:</span>
+                  <span className="font-medium">
+                    {formatPlanType(paymentDetails.plan_type)}
+                  </span>
+                </div>
+              )}
+              {paymentDetails.billing_cycle && (
+                <div className="flex justify-between">
+                  <span>Billing Cycle:</span>
+                  <span className="font-medium">
+                    {formatBillingCycle(paymentDetails.billing_cycle)}
+                  </span>
+                </div>
+              )}
+              {paymentDetails.amount && (
+                <div className="flex justify-between">
+                  <span>Amount Paid:</span>
+                  <span className="font-medium">
+                    ${paymentDetails.amount.toFixed(2)}{" "}
+                    {paymentDetails.currency?.toUpperCase()}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span>Plan:</span>
-                <span className="font-medium">{paymentDetails.plan_type}</span>
+                <span>Transaction ID:</span>
+                <span className="font-medium">
+                  {paymentDetails.transaction_id}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span>Amount:</span>
-                <span className="font-medium">${paymentDetails.amount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Payment ID:</span>
-                <span className="font-mono text-xs">{paymentIntent}</span>
-              </div>
+              {paymentDetails.subscription_start && (
+                <div className="flex justify-between">
+                  <span>Start Date:</span>
+                  <span className="font-medium">
+                    {formatDate(paymentDetails.subscription_start)}
+                  </span>
+                </div>
+              )}
+              {paymentDetails.subscription_end && (
+                <div className="flex justify-between">
+                  <span>End Date:</span>
+                  <span className="font-medium">
+                    {formatDate(paymentDetails.subscription_end)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
