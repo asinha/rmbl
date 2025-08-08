@@ -10,7 +10,6 @@ interface PaymentPageProps {
   currency: string;
   metadata: Record<string, string>;
   customerEmail: string;
-  originalPrice?: number; // Add original price for coupon tracking
 }
 
 export default function PaymentPage({
@@ -19,7 +18,6 @@ export default function PaymentPage({
   currency,
   metadata,
   customerEmail,
-  originalPrice,
 }: PaymentPageProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,42 +25,26 @@ export default function PaymentPage({
     setIsLoading(true);
 
     try {
-      // Prepare the request body for checkout
-      const checkoutData: any = {
+      // Map plan types to your Stripe price IDs
+      const priceIds = {
+        monthly: "price_1RtN6sGpqS6YukBt9uqSXvDI", // Your existing monthly price ID
+        annual: "price_1RtN8LGpqS6YukBtFqrhbF9J", // TODO: Replace with your actual annual price ID
+        lifetime: "price_1RtNBUGpqS6YukBtX9EyqgTo", // TODO: Replace with your actual lifetime price ID
+      };
+
+      const priceId = priceIds[planType as keyof typeof priceIds];
+
+      if (!priceId) {
+        throw new Error(`Invalid plan type: ${planType}`);
+      }
+
+      const checkoutData = {
+        price_id: priceId,
         customer_email: customerEmail,
         success_url: `${window.location.origin}/main/payment-success`,
         cancel_url: `${window.location.origin}/main/payment-cancelled`,
-        metadata: {
-          ...metadata,
-          // Include pricing information in metadata for verification
-          original_price: originalPrice?.toString() || amount.toString(),
-          final_price: amount.toString(),
-        },
+        metadata: metadata,
       };
-
-      // For coupons or custom pricing, use dynamic pricing instead of price_id
-      const hasCoupon =
-        metadata.coupon_code && originalPrice && originalPrice !== amount;
-
-      if (hasCoupon) {
-        // Use dynamic pricing for coupon discounts
-        checkoutData.amount = amount;
-        checkoutData.currency = currency;
-        console.log("Using dynamic pricing for coupon:", {
-          originalPrice,
-          finalPrice: amount,
-          coupon: metadata.coupon_code,
-        });
-      } else {
-        // Use pre-created price_id for standard pricing
-        const priceIds = {
-          monthly: "price_1RtN6sGpqS6YukBt9uqSXvDI", // Your monthly price ID
-          annual: "price_1RtN6sGpqS6YukBt9uqSXvDI", // Your annual price ID
-          lifetime: "price_1RtN6sGpqS6YukBt9uqSXvDI", // Your lifetime price ID
-        };
-
-        checkoutData.price_id = priceIds[planType as keyof typeof priceIds];
-      }
 
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
@@ -103,13 +85,6 @@ export default function PaymentPage({
           ? "Processing..."
           : `Pay ${currency.toUpperCase()} $${amount}`}
       </Button>
-
-      {metadata.coupon_code && originalPrice && originalPrice !== amount && (
-        <p className="text-sm text-green-600 text-center">
-          🎉 Coupon "{metadata.coupon_code}" applied! You save $
-          {(originalPrice - amount).toFixed(2)}
-        </p>
-      )}
 
       <p className="text-xs text-gray-500 text-center">
         Secure payment powered by Stripe

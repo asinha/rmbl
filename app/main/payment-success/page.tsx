@@ -55,6 +55,13 @@ function PaymentSuccessContent() {
         const data = await res.json();
         console.log("Payment verification response:", data);
         setPaymentDetails(data);
+
+        // Trigger header refresh by setting a localStorage flag
+        // This works even in the same tab
+        localStorage.setItem("subscription_updated", "true");
+
+        // Also dispatch a custom event for same-tab communication
+        window.dispatchEvent(new CustomEvent("subscriptionUpdated"));
       } catch (err) {
         console.error("Verification error:", err);
         setError(

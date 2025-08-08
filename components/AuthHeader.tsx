@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { ModalCustomApiKey } from "./hooks/ModalCustomApiKey";
@@ -29,40 +29,89 @@ export function AuthHeader() {
 
   const [mounted, setMounted] = useState(false);
   const [dbUser, setDbUser] = useState<DBUser | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Fetch latest user data from the database
-  const fetchUserFromDB = async () => {
+  // Memoized fetch function to prevent unnecessary re-renders
+  const fetchUserFromDB = useCallback(async (showLoading = false) => {
     try {
+      if (showLoading) setIsRefreshing(true);
+
       const res = await fetch("/api/user/me", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         cache: "no-store",
       });
+
       if (res.ok) {
         const data = await res.json();
         setDbUser(data.user || null);
       }
     } catch (error) {
       console.error("Error fetching user from DB:", error);
+    } finally {
+      if (showLoading) setIsRefreshing(false);
     }
-  };
+  }, []);
 
   // Initial fetch
   useEffect(() => {
-    fetchUserFromDB();
-  }, []);
+    if (mounted && isClerkLoaded) {
+      fetchUserFromDB();
+    }
+  }, [mounted, isClerkLoaded, fetchUserFromDB]);
 
   // Refresh DB data after payment success
   useEffect(() => {
     if (pathname.includes("/payment-success")) {
-      fetchUserFromDB();
+      fetchUserFromDB(true);
     }
-  }, [pathname]);
+  }, [pathname, fetchUserFromDB]);
+
+  // Auto-refresh user data every 30 seconds when component is visible
+  useEffect(() => {
+    if (!mounted || !isClerkLoaded) return;
+
+    const interval = setInterval(() => {
+      // Only auto-refresh if user is on main pages and not currently refreshing
+      if (pathname.startsWith("/main") && !isRefreshing) {
+        fetchUserFromDB();
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [mounted, isClerkLoaded, pathname, isRefreshing, fetchUserFromDB]);
+
+  // Listen for page visibility changes to refresh when user comes back to tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && pathname.startsWith("/main")) {
+        fetchUserFromDB();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [pathname, fetchUserFromDB]);
+
+  // Listen for storage events (useful for multi-tab scenarios)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "subscription_updated") {
+        fetchUserFromDB(true);
+        // Clear the flag
+        localStorage.removeItem("subscription_updated");
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [fetchUserFromDB]);
 
   const handleLogout = async () => {
     try {
@@ -145,10 +194,13 @@ export function AuthHeader() {
                     <p className="text-sm font-medium text-gray-900 truncate">
                       {userEmail}
                     </p>
-                    <div className="mt-1">
+                    <div className="mt-1 flex items-center gap-2">
                       <Badge variant="default" className="text-xs">
                         {userPlan}
                       </Badge>
+                      {isRefreshing && (
+                        <div className="w-3 h-3 border border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                      )}
                     </div>
                   </div>
                 </div>
