@@ -136,7 +136,7 @@ export const whisperRouter = t.router({
           transformations: { orderBy: { createdAt: "asc" } },
         },
       });
-      if (!whisper) throw new Error("Whisper not found");
+      if (!whisper) throw new Error("RMBL not found");
       return whisper;
     }),
   updateFullTranscription: protectedProcedure
@@ -146,7 +146,7 @@ export const whisperRouter = t.router({
       const whisper = await prisma.whisper.findUnique({
         where: { id: input.id },
       });
-      if (!whisper) throw new Error("Whisper not found");
+      if (!whisper) throw new Error("RMBL not found");
       if (whisper.userId !== ctx.auth.userId) throw new Error("Unauthorized");
       const updated = await prisma.whisper.update({
         where: { id: input.id },
@@ -161,7 +161,7 @@ export const whisperRouter = t.router({
       const whisper = await prisma.whisper.findUnique({
         where: { id: input.id },
       });
-      if (!whisper) throw new Error("Whisper not found");
+      if (!whisper) throw new Error("RMBL not found");
       if (whisper.userId !== ctx.auth.userId) throw new Error("Unauthorized");
       const updated = await prisma.whisper.update({
         where: { id: input.id },
@@ -176,7 +176,7 @@ export const whisperRouter = t.router({
       const whisper = await prisma.whisper.findUnique({
         where: { id: input.id },
       });
-      if (!whisper) throw new Error("Whisper not found");
+      if (!whisper) throw new Error("RMBL not found");
       if (whisper.userId !== ctx.auth.userId) throw new Error("Unauthorized");
 
       // Delete all related Transformations first
