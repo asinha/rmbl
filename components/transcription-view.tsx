@@ -151,10 +151,7 @@ export function TranscriptionView({
 
       {/* Add Extra Modal */}
       {showAddModal && (
-        <RecordingModal
-          onClose={() => setShowAddModal(false)}
-          title="Add Extra Recording"
-        />
+        <RecordingModal onClose={() => setShowAddModal(false)} />
       )}
     </div>
   );
