@@ -75,9 +75,6 @@ export function TransformDropdown({
               className="size-5 min-w-5 text-green-500"
             />
             <span className="text-gray-800 font-medium">{type.name}</span>
-            <span className="ml-auto text-sm text-gray-500">
-              {type.description}
-            </span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
