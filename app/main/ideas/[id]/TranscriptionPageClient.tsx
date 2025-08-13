@@ -276,12 +276,12 @@ export default function TranscriptionPageClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Whisper not found</h1>
+          <h1 className="text-2xl font-bold mb-2">RMBL not found</h1>
           <button
-            onClick={() => router.push("/whispers")}
+            onClick={() => router.push("/main/ideas")}
             className="text-blue-600 hover:text-blue-800 underline"
           >
-            Back to Whispers
+            Back to RMBLs
           </button>
         </div>
       </div>

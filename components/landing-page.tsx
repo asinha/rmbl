@@ -18,8 +18,14 @@ import {
   Archive,
   ArrowRight,
   Sparkles,
+  Check,
+  Star,
+  PlayCircle,
+  X,
+  Lock,
   CheckCircle,
   Award,
+  Smartphone,
 } from "lucide-react";
 
 export function LandingPage() {
@@ -215,328 +221,376 @@ export function LandingPage() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="bg-white font-sans">
-        {/* Hero Section */}
-        <div className="flex items-center justify-center min-h-[80vh] bg-purple-50">
-          <div className="container mx-auto p-8 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-              <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-                Speak your mind.
-              </span>
+      <main className="min-h-screen bg-white font-['Inter',sans-serif]">
+        <section className="min-h-screen bg-gradient-to-br from-[#f7fef8] via-[#f0fdf4] to-[#ecfdf5] font-['Inter',sans-serif]">
+          {/* Hero Section */}
+          <section className="py-24 text-center">
+            <h1 className="text-5xl font-bold text-gray-800">
+              Speak your mind.
             </h1>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6">
-              <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-                RMBL your thoughts.
-              </span>
+            <h1 className="text-5xl font-bold text-green-600 mb-4">
+              RMBL your thoughts.
             </h1>
-
-            <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
               One click is all it takes to transform your voice into actionable
               insights. Your second brain, always listening.
             </p>
-
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-              {user ? (
-                <Link href="/main/ideas">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-indigo-600 to-purple-500 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:opacity-90"
-                  >
-                    <Mic className="mr-2 h-5 w-5" />
-                    Start RMBLing
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/auth/login">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-indigo-600 to-purple-500 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:opacity-90"
-                  >
-                    <Mic className="mr-2 h-5 w-5" />
-                    Start RMBLing
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              )}
-
-              <Button
-                onClick={scrollToFeatures}
-                variant="outline"
-                className="bg-white text-gray-700 font-semibold py-3 px-6 rounded-lg border border-gray-300 shadow-md hover:shadow-lg transition-all hover:bg-gray-50"
-              >
+            <div className="flex justify-center space-x-4">
+              <button className="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center shadow-md hover:bg-green-700 transition duration-200">
+                <Mic className="mr-2 w-5 h-5" />
+                Start RMBLing
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </button>
+              <button className="bg-white text-gray-800 font-semibold py-3 px-6 rounded-lg border border-gray-300 shadow-md hover:bg-gray-50 transition duration-200">
                 See How It Works
-              </Button>
+              </button>
             </div>
+          </section>
 
-            {/* Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 max-w-4xl mx-auto">
-              <FeatureCard
-                icon={Mic}
-                iconColor="text-blue-500"
-                bgColor="bg-blue-100"
-                title="Quick Capture"
-                description="Voice to text in seconds"
-              />
+          {/* Features Section */}
+          <section className="py-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              <div className="bg-white p-8 rounded-lg border border-gray-200 text-center shadow-sm">
+                <div className="flex justify-center items-center mb-4">
+                  <Mic className="text-green-500 w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">
+                  Quick Capture
+                </h3>
+                <p className="text-gray-600">Voice to text in seconds</p>
+              </div>
 
-              <FeatureCard
-                icon={Sparkles}
-                iconColor="text-purple-500"
-                bgColor="bg-purple-100"
-                title="AI Transform"
-                description="Emails, blogs, lists"
-              />
+              <div className="bg-white p-8 rounded-lg border border-gray-200 text-center shadow-sm">
+                <div className="flex justify-center items-center mb-4">
+                  <Zap className="text-green-500 w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">
+                  AI Transform
+                </h3>
+                <p className="text-gray-600">Emails, blogs, lists</p>
+              </div>
 
-              <FeatureCard
-                icon={Brain}
-                iconColor="text-green-500"
-                bgColor="bg-green-100"
-                title="Second Brain"
-                description="Organize and recall"
-              />
+              <div className="bg-white p-8 rounded-lg border border-gray-200 text-center shadow-sm">
+                <div className="flex justify-center items-center mb-4">
+                  <Brain className="text-green-500 w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">
+                  Second Brain
+                </h3>
+                <p className="text-gray-600">Organize and recall</p>
+              </div>
             </div>
+          </section>
 
-            {/* Trusted By */}
-            <p className="text-gray-500 text-sm mb-4">
+          {/* Apps Coming Soon Section */}
+          <section className="py-12">
+            <div className="bg-green-100 border border-green-200 rounded-lg p-8 max-w-2xl mx-auto text-center">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-center">
+                <Smartphone className="mr-2 w-6 h-6" />
+                Apps Coming Soon!
+              </h3>
+              <div className="flex justify-center space-x-4 mb-4">
+                <a className="inline-block" href="#">
+                  <div className="h-12 w-32 bg-black rounded-lg flex items-center justify-center text-white text-sm font-medium">
+                    Google Play
+                  </div>
+                </a>
+                <a className="inline-block" href="#">
+                  <div className="h-12 w-32 bg-black rounded-lg flex items-center justify-center text-white text-sm font-medium">
+                    App Store
+                  </div>
+                </a>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Unlimited recording on mobile devices
+              </p>
+              <a
+                className="text-green-700 font-semibold flex items-center justify-center"
+                href="#"
+              >
+                <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                Grab your lifetime offer before mobile launch!
+              </a>
+            </div>
+          </section>
+
+          {/* Trusted By Section */}
+          <section className="py-16 text-center">
+            <p className="text-sm text-gray-500 mb-4">
               Trusted by busy professionals
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 text-gray-500">
-              <span>Company</span>
-              <span>Startup</span>
-              <span>Agency</span>
+            <div className="flex justify-center space-x-4">
+              <span className="bg-gray-200 text-gray-600 text-sm font-medium px-4 py-1 rounded-full">
+                Company
+              </span>
+              <span className="bg-gray-200 text-gray-600 text-sm font-medium px-4 py-1 rounded-full">
+                Startup
+              </span>
+              <span className="bg-gray-200 text-gray-600 text-sm font-medium px-4 py-1 rounded-full">
+                Agency
+              </span>
             </div>
-          </div>
-        </div>
+          </section>
+        </section>
 
-        {/* Features Section */}
-        <div id="features-section" className="container mx-auto px-4 py-16">
-          <header className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
-              Your voice, <span className="text-purple-600">amplified</span>
-            </h1>
-            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              RMBL transforms the way busy professionals capture, process, and
-              act on their thoughts.
-            </p>
-          </header>
+        <section className="bg-gradient-to-b from-gray-50 to-gray-100">
+          {/* Features Section */}
+          <div id="features-section" className="container mx-auto px-4 py-16">
+            <header className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
+                Your voice, <span className="text-green-600">amplified</span>
+              </h1>
+              <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+                RMBL transforms the way busy professionals capture, process, and
+                act on their thoughts.
+              </p>
+            </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`${feature.bgColor} p-2 rounded-full`}>
-                      <IconComponent
-                        className={`h-6 w-6 ${feature.iconColor}`}
-                      />
-                    </div>
-                    <span className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                      {feature.badge}
-                    </span>
-                  </div>
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                    {feature.title}
-                  </h2>
-                  <p className="text-gray-600">{feature.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Workflow Section */}
-        <div className="container mx-auto px-8 py-16 text-center bg-gray-50">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">
-            Perfect for every workflow
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-12">
-            Whether you're starting your day, wrapping up meetings, or capturing
-            late-night insights— RMBL fits seamlessly into your routine.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {workflows.map((workflow, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
-              >
-                <span className="inline-block bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
-                  {workflow.badge}
-                </span>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {workflow.title}
-                </h3>
-                <p className="text-gray-500">{workflow.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Pricing Section */}
-        <div className="container mx-auto px-4 py-16 bg-gray-50">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
-              Simple, honest pricing
-            </h1>
-            <p className="text-gray-500 mt-4 text-lg">
-              Start free, upgrade when your thoughts need more room to grow.
-            </p>
-          </div>
-
-          <div className="flex flex-col lg:flex-row justify-center gap-8">
-            {pricingPlans.map((plan, index) => {
-              const IconComponent = plan.icon;
-              return (
-                <div
-                  key={index}
-                  className={`bg-white rounded-xl shadow-md p-8 w-full max-w-md border ${
-                    plan.popular
-                      ? "border-2 border-indigo-500 relative"
-                      : "border-gray-200"
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-sm font-semibold px-4 py-1 rounded-full">
-                      Most Popular
-                    </div>
-                  )}
-
-                  <div className="flex flex-col items-center">
-                    <div className={`${plan.iconBg} rounded-full p-4 mb-4`}>
-                      <IconComponent className={`h-8 w-8 ${plan.iconColor}`} />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-800">
-                      {plan.name}
-                    </h2>
-                    <p className="text-4xl font-bold text-gray-900 mt-2">
-                      {plan.price}{" "}
-                      <span className="text-lg font-normal text-gray-500">
-                        {plan.period}
-                      </span>
-                    </p>
-                    <p className="text-gray-500 mt-2">{plan.description}</p>
-                  </div>
-
-                  <div className="mt-8">
-                    <ul className="space-y-3 text-gray-600">
-                      {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-center">
-                          <CheckCircle className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-
-                    {plan.excluded && (
-                      <div className="mt-8 border-t pt-6">
-                        <p className="text-gray-500 mb-4">Not included:</p>
-                        <ul className="space-y-3 text-gray-400">
-                          {plan.excluded.map((item, i) => (
-                            <li key={i} className="flex items-center">
-                              <div className="w-3 h-3 bg-gray-300 rounded-full mr-3 flex-shrink-0"></div>
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {features.map((feature, index) => {
+                const IconComponent = feature.icon;
+                return (
+                  <div
+                    key={index}
+                    className="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={`${feature.bgColor} p-2 rounded-full`}>
+                        <IconComponent
+                          className={`h-6 w-6 ${feature.iconColor}`}
+                        />
                       </div>
-                    )}
+                      <span className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        {feature.badge}
+                      </span>
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                      {feature.title}
+                    </h2>
+                    <p className="text-gray-600">{feature.description}</p>
                   </div>
-
-                  <div className="mt-10 text-center">
-                    {plan.name === "Free" ? (
-                      user ? (
-                        <Link href="/main/ideas">
-                          <Button
-                            variant={
-                              plan.buttonVariant as "default" | "outline"
-                            }
-                            className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
-                              plan.buttonClass || ""
-                            }`}
-                          >
-                            {plan.buttonText}
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Link href="/auth/login">
-                          <Button
-                            variant={
-                              plan.buttonVariant as "default" | "outline"
-                            }
-                            className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
-                              plan.buttonClass || ""
-                            }`}
-                          >
-                            {plan.buttonText}
-                          </Button>
-                        </Link>
-                      )
-                    ) : // Pro plan button
-                    user ? (
-                      <Link href="/main/pricing">
-                        <Button
-                          variant={plan.buttonVariant as "default" | "outline"}
-                          className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
-                            plan.buttonClass || ""
-                          }`}
-                        >
-                          {plan.buttonText}
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Link href="/auth/login">
-                        <Button
-                          variant={plan.buttonVariant as "default" | "outline"}
-                          className={`w-full font-semibold py-3 px-6 rounded-lg transition ${
-                            plan.buttonClass || ""
-                          }`}
-                        >
-                          {plan.buttonText}
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        {/* Final CTA Section */}
-        <div className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center py-16 px-4">
-          <div className="container mx-auto max-w-4xl p-8 rounded-lg">
-            <div className="flex justify-center items-center mb-4">
-              <Zap className="h-10 w-10" />
-              <h2 className="text-3xl font-bold ml-2">Ready to RMBL?</h2>
+                );
+              })}
             </div>
-            <p className="text-lg mb-6">
-              Join busy professionals who've made RMBL their second brain.
-              <br />
-              Start with a free account—no credit card required.
+          </div>
+
+          {/* Workflow Section */}
+          <div className="container mx-auto px-8 py-16 text-center">
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+              Perfect for every workflow
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-12">
+              Whether you're starting your day, wrapping up meetings, or
+              capturing late-night insights— RMBL fits seamlessly into your
+              routine.
             </p>
-            {user ? (
-              <Link href="/main/ideas">
-                <Button
-                  variant="secondary"
-                  className="bg-white text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 ease-in-out flex items-center justify-center mx-auto"
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {workflows.map((workflow, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
                 >
-                  <Mic className="mr-2 h-5 w-5" />
-                  Start Your First Recording
-                </Button>
-              </Link>
-            ) : (
-              <Link href="/auth/login">
-                <Button
-                  variant="secondary"
-                  className="bg-white text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 ease-in-out flex items-center justify-center mx-auto"
-                >
-                  <Mic className="mr-2 h-5 w-5" />
-                  Get Started for Free
-                </Button>
-              </Link>
-            )}
+                  <span className="inline-block bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full mb-4">
+                    {workflow.badge}
+                  </span>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {workflow.title}
+                  </h3>
+                  <p className="text-gray-500">{workflow.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        {/* Pricing Section */}
+        <div className="bg-gray-50 font-['Roboto',sans-serif] min-h-screen">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+            {/* Header */}
+            <header className="text-center mb-8 sm:mb-12">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight">
+                One simple choice:{" "}
+                <span className="text-green-500">Free or Forever</span>
+              </h1>
+              <p className="text-gray-600 mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg px-4 sm:px-0">
+                Start free with 1-minute recordings, or get unlimited access
+                forever with one payment.
+              </p>
+            </header>
+
+            {/* Pricing Cards */}
+            <div className="flex flex-col lg:flex-row justify-center items-stretch gap-6 lg:gap-8 max-w-6xl mx-auto">
+              {/* Free Plan */}
+              <div className="bg-white rounded-lg shadow-md p-6 sm:p-8 w-full lg:w-1/2 xl:w-2/5">
+                <div className="text-center mb-6">
+                  <Mic className="text-gray-400 w-12 h-12 sm:w-16 sm:h-16 mx-auto" />
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mt-3 sm:mt-4">
+                    Web Recording
+                  </h2>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-800">
+                    Free
+                  </p>
+                  <p className="text-sm text-gray-500">1-minute limit</p>
+                  <p className="text-gray-600 mt-2 text-sm sm:text-base">
+                    Perfect for quick thoughts on the web
+                  </p>
+                </div>
+
+                <ul className="space-y-3 sm:space-y-4 text-gray-500 text-sm sm:text-base">
+                  <li className="flex items-center">
+                    <Check className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>1-minute recording time</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Basic transcription</span>
+                  </li>
+                  <li className="flex items-center text-gray-400">
+                    <X className="mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Web-only access</span>
+                  </li>
+                  <li className="flex items-center text-gray-400">
+                    <X className="mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Basic dashboard</span>
+                  </li>
+                  <li className="flex items-center text-gray-400">
+                    <X className="mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Unlimited recording</span>
+                  </li>
+                  <li className="flex items-center text-gray-400">
+                    <X className="mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>AI transformations</span>
+                  </li>
+                  <li className="flex items-center text-gray-400">
+                    <X className="mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Mobile apps access</span>
+                  </li>
+                  <li className="flex items-center text-gray-400">
+                    <X className="mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Priority support</span>
+                  </li>
+                </ul>
+
+                <button className="mt-6 sm:mt-8 w-full py-3 px-6 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition duration-300 text-sm sm:text-base">
+                  Start Recording
+                </button>
+              </div>
+
+              {/* Lifetime Plan */}
+              <div className="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full lg:w-1/2 xl:w-2/5 h-1/2 border-2 border-green-500 relative">
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-bl-lg rounded-tr-lg transform -translate-y-0.5 translate-x-0.5">
+                  $300 OFF
+                </span>
+
+                <div className="text-center mb-6">
+                  <Star className="text-green-500 w-12 h-12 sm:w-16 sm:h-16 mx-auto fill-current" />
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mt-3 sm:mt-4">
+                    Lifetime Access
+                  </h2>
+                  <p className="text-4xl sm:text-5xl font-bold text-gray-800">
+                    $99
+                  </p>
+                  <p className="text-sm text-gray-500">one-time payment</p>
+                  <p className="text-xs text-red-500 line-through">
+                    ($399) 80% OFF
+                  </p>
+                </div>
+
+                <div className="text-xs sm:text-sm text-yellow-600 bg-yellow-100 p-3 rounded-lg mb-4">
+                  <p>
+                    <span className="font-bold">LIMITED TIME:</span> Get
+                    everything forever + upcoming mobile apps
+                  </p>
+                  <p className="text-xs mt-1">Price increases to $199 soon!</p>
+                  <p className="text-xs mt-1">1,247+ users joined this week</p>
+                </div>
+
+                <ul className="space-y-3 sm:space-y-4 text-gray-600 text-sm sm:text-base">
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Unlimited recording time</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>AI-powered transformations</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Email & blog generation</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Advanced archive & search</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>iOS & Android apps access</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Lifetime updates included</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>VIP support access</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Early beta features</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>Priority feature requests</span>
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="text-green-500 mr-2 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span>No monthly fees ever</span>
+                  </li>
+                </ul>
+
+                <button className="mt-6 sm:mt-8 w-full py-3 px-4 sm:px-6 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition duration-300 flex items-center justify-center text-sm sm:text-base">
+                  <Lock className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
+                  Secure Lifetime Access Now
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Apps Section */}
+            <div className="mt-12 sm:mt-16 bg-green-50 p-6 sm:p-8 lg:p-12 rounded-lg text-center mx-4 sm:mx-0">
+              <div className="flex justify-center items-center gap-4 mb-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-800 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">iOS</span>
+                </div>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                  <Smartphone className="text-white w-4 h-4 sm:w-6 sm:h-6" />
+                </div>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                Mobile Apps Coming Soon!
+              </h3>
+              <p className="text-gray-600 mt-2 max-w-2xl mx-auto text-sm sm:text-base px-4 sm:px-0">
+                Get ready for unlimited recording on iOS and Android. Full
+                mobile experience with all features included in your lifetime
+                purchase.
+              </p>
+              <div className="flex justify-center items-center gap-2 sm:gap-4 text-xs text-gray-500 mt-4 flex-wrap">
+                <span># iOS App</span>
+                <span># Android App</span>
+                <span># Unlimited Recording</span>
+                <span># Sync Across Devices</span>
+              </div>
+            </div>
+
+            {/* CTA Section */}
+            <div className="text-center mt-8 sm:mt-12 px-4 sm:px-0">
+              <a
+                className="text-green-600 font-semibold hover:underline inline-flex items-center text-sm sm:text-base"
+                href="#"
+              >
+                <PlayCircle className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
+                Try 1-Minute Recording Now (Free)
+              </a>
+            </div>
           </div>
         </div>
       </main>

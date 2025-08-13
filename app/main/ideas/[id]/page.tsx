@@ -16,7 +16,7 @@ export async function generateMetadata({
   await prisma.$disconnect();
   if (!whisper) {
     return {
-      title: "Whisper Not Found",
+      title: "RMBL Not Found",
       description: "The requested transcription could not be found.",
     };
   }
