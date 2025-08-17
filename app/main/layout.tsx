@@ -8,9 +8,9 @@ export default function MainLayout({
 }) {
   return (
     <>
-      <AuthHeader />
+      {/* <AuthHeader /> */}
       <main className="flex-1">{children}</main>
-      <AuthFooter />
+      {/* <AuthFooter /> */}
     </>
   );
 }

@@ -1,179 +1,3 @@
-// "use client";
-// import { Button } from "@/components/ui/button";
-// import { useRouter } from "next/navigation";
-
-// export default function UpgradePage() {
-//   const router = useRouter();
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-//       <div className="w-full max-w-6xl">
-//         <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-//           <div className="p-8">
-//             {/* Header */}
-//             <div className="text-center mb-8">
-//               <h1 className="text-3xl font-bold text-gray-900 mb-6">
-//                 Upgrade Your Plan
-//               </h1>
-
-//               <p className="text-gray-500">
-//                 Upgrade to get unlimited recording time and more features!
-//               </p>
-//             </div>
-
-//             {/* Pricing Cards */}
-//             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-//               {/* Monthly Plan */}
-//               <div className="border rounded-lg p-6 hover:border-gray-300 transition-colors hover:shadow-md">
-//                 <div className="flex justify-between items-start mb-4">
-//                   <h3 className="text-xl font-semibold text-gray-900">
-//                     Monthly Plan
-//                   </h3>
-//                   <span className="text-2xl font-bold text-gray-900">
-//                     $0.99/mo
-//                   </span>
-//                 </div>
-//                 <ul className="text-gray-600 space-y-2 mb-6">
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Unlimited recordings
-//                   </li>
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     High-quality transcriptions
-//                   </li>
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Priority support
-//                   </li>
-//                 </ul>
-//                 <Button
-//                   className="w-full"
-//                   onClick={() =>
-//                     (window.location.href = "/main/payment-portal?plan=monthly")
-//                   }
-//                 >
-//                   Choose Monthly
-//                 </Button>
-//               </div>
-
-//               {/* Annual Plan - Most Popular */}
-//               <div className="border-2 border-blue-200 rounded-lg p-6 bg-blue-50 relative hover:shadow-md transition-shadow">
-//                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-//                   <span className="bg-blue-500 text-white text-sm px-3 py-1 rounded-full font-medium">
-//                     MOST POPULAR
-//                   </span>
-//                 </div>
-//                 <div className="flex justify-between items-start mb-4">
-//                   <h3 className="text-xl font-semibold text-gray-900">
-//                     Annual Plan
-//                   </h3>
-//                   <div className="text-right">
-//                     <span className="text-2xl font-bold text-gray-900">
-//                       $19/year
-//                     </span>
-//                     <div className="text-sm text-green-600 font-medium">
-//                       Save 17%
-//                     </div>
-//                   </div>
-//                 </div>
-//                 <ul className="text-gray-600 space-y-2 mb-6">
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Everything in Monthly
-//                   </li>
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Save $20 per year
-//                   </li>
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Coupon support
-//                   </li>
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Advanced features
-//                   </li>
-//                 </ul>
-//                 <Button
-//                   className="w-full bg-blue-600 hover:bg-blue-700"
-//                   onClick={() =>
-//                     (window.location.href = "/main/payment-portal?plan=annual")
-//                   }
-//                 >
-//                   Choose Annual
-//                 </Button>
-//               </div>
-
-//               {/* Lifetime Plan */}
-//               <div className="border rounded-lg p-6 hover:border-gray-300 transition-colors hover:shadow-md">
-//                 <div className="flex justify-between items-start mb-4">
-//                   <h3 className="text-xl font-semibold text-gray-900">
-//                     Lifetime Plan
-//                   </h3>
-//                   <span className="text-2xl font-bold text-gray-900">$99</span>
-//                 </div>
-//                 <ul className="text-gray-600 space-y-2 mb-6">
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Everything in Annual
-//                   </li>
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     One-time payment
-//                   </li>
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Lifetime access
-//                   </li>
-//                   <li className="flex items-center">
-//                     <span className="text-green-500 mr-2">✓</span>
-//                     Future updates included
-//                   </li>
-//                 </ul>
-//                 <Button
-//                   variant="outline"
-//                   className="w-full hover:bg-gray-50"
-//                   onClick={() =>
-//                     (window.location.href =
-//                       "/main/payment-portal?plan=lifetime")
-//                   }
-//                 >
-//                   Choose Lifetime
-//                 </Button>
-//               </div>
-//             </div>
-
-//             {/* Footer */}
-//             <div className="pt-6 border-t border-gray-200">
-//               <div className="flex justify-center gap-4 mb-4">
-//                 <Button
-//                   variant="ghost"
-//                   onClick={() => router.back()}
-//                   className="text-gray-500 hover:text-gray-700"
-//                 >
-//                   ← Go Back
-//                 </Button>
-
-//                 <Button
-//                   variant="ghost"
-//                   onClick={() => router.push("/main/ideas")} // or wherever you want to redirect
-//                   className="text-gray-500 hover:text-gray-700"
-//                 >
-//                   Maybe Later
-//                 </Button>
-//               </div>
-//               <p className="text-sm text-center text-gray-400">
-//                 Your free limit resets daily at midnight
-//               </p>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -183,79 +7,93 @@ export default function UpgradePage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl">
-        <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-xl transition-all duration-300 ease-in-out transform hover:scale-[1.01]">
+        <div className="bg-white border border-green-200 rounded-2xl shadow-xl overflow-hidden">
+          {/* Decorative header */}
+          <div className="bg-gradient-to-r from-green-500 to-green-600 h-2 w-full"></div>
+
           <div className="p-8">
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                Get Lifetime Access
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                Unlock <span className="text-green-600">Lifetime</span> Access
               </h1>
-              <p className="text-gray-500 max-w-lg mx-auto">
-                Unlock unlimited recordings, high-quality transcriptions, and
-                all future updates — for a single one-time payment.
+              <p className="text-gray-500">
+                One payment. <span className="font-medium">Forever</span> yours.
               </p>
             </div>
 
-            {/* Lifetime Plan Card */}
-            <div className="border rounded-lg p-6 hover:border-gray-300 transition-colors hover:shadow-md mb-8">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  Lifetime Plan
-                </h3>
-                <span className="text-2xl font-bold text-gray-900">$99</span>
+            {/* Pricing Card */}
+            <div className="group border-2 border-green-100 rounded-xl p-6 bg-white shadow-sm mb-8 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:border-green-200">
+              {/* Popular badge */}
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-xs font-semibold px-3 py-1 transform rotate-12 translate-x-2 -translate-y-2">
+                BEST VALUE
               </div>
-              <ul className="text-gray-600 space-y-2 mb-6">
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  Unlimited recordings
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  High-quality transcriptions
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  One-time payment
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  Lifetime access to all features
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>
-                  All future updates included
-                </li>
+
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    Lifetime Plan
+                  </h3>
+                  <p className="text-sm text-gray-500">Pay once, use forever</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-3xl font-bold text-gray-900">$99</span>
+                  <div className="text-xs text-gray-500">one-time payment</div>
+                </div>
+              </div>
+
+              <ul className="space-y-3 mb-6">
+                {[
+                  "Unlimited recordings",
+                  "High-quality transcriptions",
+                  "Priority support",
+                  "All future updates",
+                  "No recurring fees",
+                ].map((feature, index) => (
+                  <li key={index} className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                    <span className="text-gray-700">{feature}</span>
+                  </li>
+                ))}
               </ul>
+
               <Button
-                variant="outline"
-                className="w-full hover:bg-gray-50"
+                className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-md transition-all duration-300"
                 onClick={() =>
-                  (window.location.href = "/main/payment-portal?plan=lifetime")
+                  router.push("/main/payment-portal?plan=lifetime")
                 }
               >
                 Get Lifetime Access
               </Button>
+
+              <div className="mt-4 text-center text-sm text-gray-500">
+                <p>30-day money back guarantee</p>
+              </div>
             </div>
 
             {/* Footer */}
             <div className="pt-6 border-t border-gray-200">
-              <div className="flex justify-center gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
                 <Button
                   variant="ghost"
-                  onClick={() => router.back()}
-                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => router.push("/main/dashboard")}
+                  className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
                 >
-                  ← Go Back
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push("/main/ideas")}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  Maybe Later
+                  Maybe later
                 </Button>
               </div>
             </div>

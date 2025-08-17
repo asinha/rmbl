@@ -101,7 +101,10 @@ export function Header() {
             <Button variant="ghost" onClick={handleLogin}>
               Login
             </Button>
-            <Button className="font-medium" onClick={handleSignUp}>
+            <Button
+              className="font-medium bg-green-600 hover:bg-green-700 text-white"
+              onClick={handleSignUp}
+            >
               Sign up
             </Button>
           </>

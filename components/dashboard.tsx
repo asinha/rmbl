@@ -1808,6 +1808,9 @@ export function Dashboard({
               <h1 className="text-xl font-semibold text-left text-[#101828]">
                 Your RMBLs
               </h1>
+              <h1>
+                <Link href={"/main/dashboard"}>Dashboard</Link>
+              </h1>
               {usage && (
                 <Badge className="bg-green-500 text-white hover:bg-green-600">
                   {usage.plan.toUpperCase()} PLAN
@@ -1838,6 +1841,7 @@ export function Dashboard({
               <h2 className="text-xl font-medium text-black mb-2">
                 Welcome, RMBLer!
               </h2>
+
               <p className="max-w-[264px] text-base text-center text-[#364153] mb-8">
                 {isLimitExceeded
                   ? "You've used your free recording time for today. Upgrade to continue recording."
