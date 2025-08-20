@@ -300,7 +300,7 @@
 //                 isDesktop ? (
 //                   <div key={transcription.id} className="relative w-full">
 //                     <Link
-//                       href={`/main/ideas/${transcription.id}`}
+//                       href={`/main/dashboard/${transcription.id}`}
 //                       className="self-stretch flex-grow-0 flex-shrink-0 h-[121px] overflow-hidden group border-t-0 border-r-0 border-b-[0.7px] border-l-0 border-gray-200 md:border-[0.7px] md:border-transparent md:rounded-xl focus-within:bg-gray-50 focus-within:border-[#d1d5dc] hover:bg-gray-50 hover:border-[#d1d5dc] transition-all flex flex-col justify-between px-6 py-4 pr-14"
 //                       tabIndex={0}
 //                     >
@@ -339,7 +339,7 @@
 //                   </div>
 //                 ) : (
 //                   <Link
-//                     href={`/main/ideas/${transcription.id}`}
+//                     href={`/main/dashboard/${transcription.id}`}
 //                     key={transcription.id}
 //                     className="self-stretch flex-grow-0 flex-shrink-0 h-[121px] overflow-hidden group border-t-0 border-r-0 border-b-[0.7px] border-l-0 border-gray-200 md:border-[0.7px] md:border-transparent md:rounded-xl focus-within:bg-gray-50 focus-within:border-[#d1d5dc] hover:bg-gray-50 hover:border-[#d1d5dc] transition-all flex flex-col justify-between px-6 py-4"
 //                     tabIndex={0}
@@ -771,7 +771,7 @@
 //                 isDesktop ? (
 //                   <div key={transcription.id} className="relative w-full">
 //                     <Link
-//                       href={`/main/ideas/${transcription.id}`}
+//                       href={`/main/dashboard/${transcription.id}`}
 //                       className="self-stretch flex-grow-0 flex-shrink-0 h-[121px] overflow-hidden group border-t-0 border-r-0 border-b-[0.7px] border-l-0 border-gray-200 md:border-[0.7px] md:border-transparent md:rounded-xl focus-within:bg-gray-50 focus-within:border-[#d1d5dc] hover:bg-gray-50 hover:border-[#d1d5dc] transition-all flex flex-col justify-between px-6 py-4 pr-14"
 //                       tabIndex={0}
 //                     >
@@ -810,7 +810,7 @@
 //                   </div>
 //                 ) : (
 //                   <Link
-//                     href={`/main/ideas/${transcription.id}`}
+//                     href={`/main/dashboard/${transcription.id}`}
 //                     key={transcription.id}
 //                     className="self-stretch flex-grow-0 flex-shrink-0 h-[121px] overflow-hidden group border-t-0 border-r-0 border-b-[0.7px] border-l-0 border-gray-200 md:border-[0.7px] md:border-transparent md:rounded-xl focus-within:bg-gray-50 focus-within:border-[#d1d5dc] hover:bg-gray-50 hover:border-[#d1d5dc] transition-all flex flex-col justify-between px-6 py-4"
 //                     tabIndex={0}
@@ -1109,7 +1109,7 @@
 //                   key={t.id}
 //                   className="relative w-full border rounded-md p-4 hover:bg-gray-50"
 //                 >
-//                   <Link href={`/main/ideas/${t.id}`}>
+//                   <Link href={`/main/dashboard/${t.id}`}>
 //                     <p className="text-base font-medium text-[#101828] mb-2">
 //                       {t.title}
 //                     </p>
@@ -1417,7 +1417,7 @@
 //                       isDeleting ? "opacity-50 pointer-events-none" : ""
 //                     }`}
 //                   >
-//                     <Link href={`/main/ideas/${t.id}`}>
+//                     <Link href={`/main/dashboard/${t.id}`}>
 //                       <p className="text-base font-medium text-[#101828] mb-2">
 //                         {t.title}
 //                       </p>
@@ -1859,7 +1859,7 @@ export function Dashboard({
                       isDeleting ? "opacity-50 pointer-events-none" : ""
                     }`}
                   >
-                    <Link href={`/main/ideas/${t.id}`}>
+                    <Link href={`/main/dashboard/${t.id}`}>
                       <p className="text-base font-medium text-[#101828] mb-2">
                         {t.title}
                       </p>

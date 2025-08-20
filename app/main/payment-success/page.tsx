@@ -238,7 +238,7 @@ function PaymentSuccessContent() {
 
         <div className="space-y-3">
           <Button
-            onClick={() => router.push("/main/ideas")}
+            onClick={() => router.push("/main/dashboard")}
             className="w-full bg-green-600 hover:bg-green-700"
           >
             Go to Dashboard

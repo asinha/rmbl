@@ -124,7 +124,7 @@ export function AuthHeader() {
   };
 
   const isSingleWhisperPage =
-    pathname.startsWith("/main/ideas/") && pathname.length > 11;
+    pathname.startsWith("/main/dashboard/") && pathname.length > 11;
 
   if (!mounted || !isClerkLoaded) {
     return (
@@ -139,7 +139,7 @@ export function AuthHeader() {
   return (
     <header className="sticky top-0 z-50 min-h-[63px] flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
       {isSingleWhisperPage ? (
-        <Link href="/main/ideas/" className="flex items-center gap-2">
+        <Link href="/main/dashboard/" className="flex items-center gap-2">
           <img
             src="/back.svg"
             className="min-w-[14px] size-[14px]"
@@ -149,7 +149,7 @@ export function AuthHeader() {
         </Link>
       ) : (
         <Link
-          href={dbUser ? "/main/ideas/" : "/"}
+          href={dbUser ? "/main/dashboard/" : "/"}
           className="flex items-center gap-2"
         >
           <img

@@ -30,7 +30,44 @@ export default function RootLayout({
   // This must be a Client Component to use useRouter, so we can use a workaround:
   // Place a ClientHeader component below
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#16a34a", // green-600 if you want to match your theme
+        },
+        elements: {
+          socialButtonsProviderIcon__google: {
+            filter: "none", // removes the gray filter on Google icon
+          },
+          socialButtonsBlockButton: {
+            backgroundColor: "#f8fafc", // slate-50
+            "&:hover": {
+              backgroundColor: "#f1f5f9", // slate-100
+            },
+          },
+        },
+        layout: {
+          logoImageUrl: "/LOGO RMBL-ICON.svg", // your logo
+          logoPlacement: "inside", // or 'outside'
+          socialButtonsPlacement: "bottom", // or 'top'
+          socialButtonsVariant: "blockButton", // or 'iconButton'
+        },
+        signIn: {
+          variables: {
+            colorPrimary: "#16a34a", // green-600
+          },
+          elements: {
+            headerTitle: {
+              display: "none", // hide default header if needed
+            },
+            card: {
+              boxShadow: "none",
+              border: "1px solid #e2e8f0", // slate-200
+            },
+          },
+        },
+      }}
+    >
       <TogetherApiKeyProvider>
         <TRPCReactProvider>
           <html lang="en">

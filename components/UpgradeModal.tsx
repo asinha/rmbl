@@ -19,7 +19,7 @@ export const LimitReachedModal = ({ onClose }: LimitReachedModalProps) => {
 
   const handleContinueWithFree = () => {
     onClose();
-    router.push("/main/ideas");
+    router.push("/main/dashboard");
   };
 
   const handleViewUpgrade = () => {

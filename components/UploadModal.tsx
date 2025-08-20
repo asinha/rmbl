@@ -99,7 +99,7 @@ export function UploadModal({
         await queryClient.invalidateQueries({
           queryKey: trpc.whisper.listWhispers.queryKey(),
         });
-        router.push(`/main/ideas/${id}`);
+        router.push(`/main/dashboard/${id}`);
       } catch (err) {
         console.error("Upload error:", err);
         if (err instanceof Error) {

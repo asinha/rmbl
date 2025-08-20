@@ -276,12 +276,12 @@ export default function TranscriptionPageClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">RMBL not found</h1>
+          <h1 className="text-2xl font-bold mb-2">Whisper not found</h1>
           <button
-            onClick={() => router.push("/main/ideas")}
+            onClick={() => router.push("/whispers")}
             className="text-blue-600 hover:text-blue-800 underline"
           >
-            Back to RMBLs
+            Back to Whispers
           </button>
         </div>
       </div>
@@ -431,7 +431,7 @@ export default function TranscriptionPageClient({ id }: { id: string }) {
             <span>Copy</span>
           </button>
           <Link
-            href="/main/ideas"
+            href="/whispers"
             className="flex-1 py-2 rounded-lg border border-slate-200 bg-white text-[#364153] font-medium flex items-center justify-center gap-2"
           >
             <img src="/new.svg" className="size-5 min-w-5 min-h-5" />

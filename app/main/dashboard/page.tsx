@@ -33,6 +33,19 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { RecordingModal } from "@/components/RecordingModal";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
+import WeeklyCheckinSchedule from "@/components/WeeklyCheckin";
+import ProgressDashboard from "@/components/Progress";
+import ProfileSettings from "@/components/Profile";
+
+interface Tag {
+  id: string;
+  name: string;
+  whisperId: string;
+  userId: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface Transcription {
   id: string;
@@ -43,7 +56,7 @@ interface Transcription {
   date?: string;
   time?: string;
   duration?: string;
-  tags?: string[];
+  tags?: Tag[];
   transforms?: string[];
 }
 
@@ -59,6 +72,270 @@ interface DBUser {
   subscriptionPlan: string | null;
   subscriptionStatus: string | null;
 }
+
+interface NavItem {
+  id: string;
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href?: string;
+}
+
+// Component for Dashboard view
+const DashboardComponent = ({
+  transcriptions,
+  searchQuery,
+  setSearchQuery,
+  activeFilter,
+  setActiveFilter,
+  handleDelete,
+  deletingIds,
+  displayedTranscriptions,
+  hasMoreToShow,
+  handleLoadMore,
+  isLoadingMore,
+  usage,
+  isLimitExceeded,
+  handleUploadVoiceNote,
+  handleNewWhisper,
+}: {
+  transcriptions: Transcription[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  activeFilter: string;
+  setActiveFilter: (filter: string) => void;
+  handleDelete: (id: string) => void;
+  deletingIds: Set<string>;
+  displayedTranscriptions: Transcription[];
+  hasMoreToShow: boolean;
+  handleLoadMore: () => void;
+  isLoadingMore: boolean;
+  usage: UsageData | null;
+  isLimitExceeded: boolean;
+  handleUploadVoiceNote: () => void;
+  handleNewWhisper: () => void;
+}) => {
+  const filters = ["All", "Work", "Personal", "Meeting", "Idea"];
+
+  const getTagColor = (tag: Tag) => {
+    if (tag.color) {
+      return `bg-${tag.color}-100 text-${tag.color}-800`;
+    }
+
+    // Fallback color mapping based on tag name
+    const colors: { [key: string]: string } = {
+      Work: "bg-blue-100 text-blue-800",
+      Meeting: "bg-purple-100 text-purple-800",
+      Idea: "bg-green-100 text-green-800",
+      Personal: "bg-pink-100 text-pink-800",
+    };
+    return colors[tag.name] || "bg-gray-100 text-gray-800";
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="flex flex-row justify-between mb-5">
+        <h1 className="text-xl font-bold">My RMBLs</h1>
+        <div className="hidden lg:flex items-center space-x-4">
+          <Button
+            onClick={handleUploadVoiceNote}
+            disabled={isLimitExceeded}
+            variant="outline"
+            className={
+              isLimitExceeded
+                ? "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+            }
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            {isLimitExceeded ? "Upgrade to Upload" : "Upload Voice Note"}
+          </Button>
+          <Button
+            onClick={handleNewWhisper}
+            disabled={isLimitExceeded}
+            className={
+              isLimitExceeded
+                ? "bg-gray-400 text-gray-600 cursor-not-allowed"
+                : "bg-green-500 text-white hover:bg-green-600"
+            }
+          >
+            <Mic className="w-4 h-4 mr-2" />
+            {isLimitExceeded ? "Upgrade to Record" : "New Recording"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="mb-4">
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Input
+            className="pl-10"
+            placeholder="Search your thoughts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="flex space-x-2 overflow-x-auto pb-2">
+          {filters.map((filter) => (
+            <button
+              key={filter}
+              className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
+                activeFilter === filter
+                  ? "bg-gray-200 text-gray-800"
+                  : "border border-gray-300 text-gray-600 hover:bg-gray-100"
+              }`}
+              onClick={() => setActiveFilter(filter)}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Usage Warning */}
+      {usage &&
+        usage.plan === "free" &&
+        usage.remainingToday <= 30 &&
+        usage.remainingToday > 0 && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg mb-6">
+            <p className="text-sm">
+              Warning: Only {Math.floor(usage.remainingToday / 60)}m{" "}
+              {usage.remainingToday % 60}s of recording time remaining today!
+            </p>
+          </div>
+        )}
+
+      {/* Content */}
+      {transcriptions.length === 0 ? (
+        <div className="text-center py-16">
+          <h2 className="text-xl font-medium mb-2">Welcome, RMBLer!</h2>
+          <p className="text-gray-600 mb-8">
+            {isLimitExceeded
+              ? "You've used your free recording time for today. Upgrade to continue recording."
+              : "Start by creating a new RMBL or uploading a voice note"}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {displayedTranscriptions.map((entry) => {
+            const isDeleting = deletingIds.has(entry.id);
+            return (
+              <div
+                key={entry.id}
+                className={`bg-white p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200 ${
+                  isDeleting ? "opacity-50 pointer-events-none" : ""
+                }`}
+              >
+                <Link href={`/main/dashboard/${entry.id}`}>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-800 truncate">
+                          {entry.title}
+                        </h3>
+                        <span className="text-xs text-gray-500 mt-1 lg:mt-0 flex-shrink-0">
+                          {entry.date ||
+                            formatWhisperTimestamp(entry.timestamp)}
+                          {entry.time && ` • ${entry.time}`}
+                          {entry.duration && ` • ${entry.duration}`}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-sm line-clamp-3 lg:line-clamp-2 mb-3">
+                        {entry.preview}
+                      </p>
+
+                      {/* Tags */}
+                      {entry.tags && entry.tags.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          {entry.tags.map((tag, tagIndex) => (
+                            <span
+                              key={tagIndex}
+                              className={`text-xs font-medium px-2.5 py-0.5 rounded-full`}
+                              style={{ backgroundColor: tag.color }}
+                            >
+                              {tag.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Transforms */}
+                      {entry.transforms && entry.transforms.length > 0 && (
+                        <div className="flex flex-col sm:flex-row sm:justify-start sm:items-center mt-4 space-y-2 sm:space-y-0 sm:space-x-4 text-sm">
+                          <span className="text-gray-500">Transformed:</span>
+                          <div className="flex flex-wrap gap-3">
+                            {entry.transforms.map(
+                              (transform, transformIndex) => (
+                                <button
+                                  key={transformIndex}
+                                  className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                                >
+                                  {transform === "Email" ? (
+                                    <Mail className="w-4 h-4" />
+                                  ) : transform === "Blog" ? (
+                                    <Edit className="w-4 h-4" />
+                                  ) : (
+                                    <List className="w-4 h-4" />
+                                  )}
+                                  <span>{transform}</span>
+                                </button>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      className="ml-4 flex-shrink-0 p-2 rounded-md hover:bg-gray-100"
+                      onClick={() => handleDelete(entry.id)}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      )}
+                    </button>
+                  </div>
+                </Link>
+              </div>
+            );
+          })}
+
+          {/* Load More Button */}
+          {hasMoreToShow && (
+            <div className="text-center mt-8">
+              <Button
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                variant="outline"
+                className="bg-white border border-gray-300 text-gray-700 font-medium py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span>
+                      Load More (
+                      {transcriptions.length - displayedTranscriptions.length}{" "}
+                      remaining)
+                    </span>
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 function Spinner() {
   return (
@@ -93,6 +370,7 @@ const RMBLArchive = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeView, setActiveView] = useState("dashboard");
 
   const router = useRouter();
   const { user, isLoaded } = useUser();
@@ -131,7 +409,7 @@ const RMBLArchive = () => {
 
   useEffect(() => {
     if (user === null) {
-      router.push("/auth/sign-up?redirectUrl=/main/ideas");
+      router.push("/auth/sign-up?redirectUrl=/main/dashboard");
     }
   }, [user, router]);
 
@@ -144,7 +422,7 @@ const RMBLArchive = () => {
     const matchesFilter =
       activeFilter === "All"
         ? true
-        : transcription.tags?.includes(activeFilter);
+        : transcription.tags?.some((tag) => tag.name === activeFilter);
 
     return matchesSearch && matchesFilter;
   });
@@ -154,7 +432,29 @@ const RMBLArchive = () => {
 
   const isLimitExceeded = usage?.plan === "free" && usage?.remainingToday <= 0;
 
-  const filters = ["All", "Work", "Personal", "Meeting", "Idea"];
+  const navItems: NavItem[] = [
+    {
+      id: "dashboard",
+      name: "Dashboard",
+      icon: LayoutDashboard,
+      href: "/main/dashboard",
+    },
+    {
+      id: "weekly-checkin",
+      name: "Weekly Check-in",
+      icon: Archive,
+    },
+    {
+      id: "progress",
+      name: "Progress",
+      icon: TrendingUp,
+    },
+    {
+      id: "profile",
+      name: "Profile",
+      icon: User,
+    },
+  ];
 
   // Usage management functions
   const debugUsage = (label: string, data: any) => {
@@ -433,6 +733,7 @@ const RMBLArchive = () => {
     console.log("Upload completed with duration:", durationSeconds);
     incrementUsage(durationSeconds);
   };
+
   const handleLogout = async () => {
     try {
       await signOut();
@@ -441,6 +742,11 @@ const RMBLArchive = () => {
       console.error("Error signing out:", error);
       router.push("/");
     }
+  };
+
+  const handleNavClick = (navId: string) => {
+    setActiveView(navId);
+    setIsDrawerOpen(false); // Close mobile drawer when nav item is clicked
   };
 
   // Keyboard shortcut
@@ -461,28 +767,57 @@ const RMBLArchive = () => {
     };
   }, [usage]);
 
-  const getTagColor = (tag: string) => {
-    const colors = {
-      Work: "bg-blue-100 text-blue-800",
-      Meeting: "bg-purple-100 text-purple-800",
-      Idea: "bg-green-100 text-green-800",
-      Personal: "bg-pink-100 text-pink-800",
-    };
-    return colors[tag as keyof typeof colors] || "bg-gray-100 text-gray-800";
+  // Render the appropriate component based on activeView
+  const renderActiveComponent = () => {
+    switch (activeView) {
+      case "dashboard":
+        return (
+          <DashboardComponent
+            transcriptions={filteredTranscriptions}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            handleDelete={handleDelete}
+            deletingIds={deletingIds}
+            displayedTranscriptions={displayedTranscriptions}
+            hasMoreToShow={hasMoreToShow}
+            handleLoadMore={handleLoadMore}
+            isLoadingMore={isLoadingMore}
+            usage={usage}
+            isLimitExceeded={isLimitExceeded}
+            handleUploadVoiceNote={handleUploadVoiceNote}
+            handleNewWhisper={handleNewWhisper}
+          />
+        );
+      case "weekly-checkin":
+        return <WeeklyCheckinSchedule />;
+      case "progress":
+        return <ProgressDashboard />;
+      case "profile":
+        return <ProfileSettings />;
+      default:
+        return (
+          <DashboardComponent
+            transcriptions={filteredTranscriptions}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            handleDelete={handleDelete}
+            deletingIds={deletingIds}
+            displayedTranscriptions={displayedTranscriptions}
+            hasMoreToShow={hasMoreToShow}
+            handleLoadMore={handleLoadMore}
+            isLoadingMore={isLoadingMore}
+            usage={usage}
+            isLimitExceeded={isLimitExceeded}
+            handleUploadVoiceNote={handleUploadVoiceNote}
+            handleNewWhisper={handleNewWhisper}
+          />
+        );
+    }
   };
-
-  const navItems = [
-    {
-      name: "Dashboard",
-      icon: LayoutDashboard,
-      active: true,
-      href: "/main/dashboard",
-    },
-    //{ name: "Record", icon: Mic, active: false },
-    { name: "Weekly Check-in", icon: Archive, active: false },
-    { name: "Progress", icon: TrendingUp, active: false },
-    { name: "Profile", icon: User, active: false },
-  ];
 
   if (isLoading) {
     return <Spinner />;
@@ -505,57 +840,59 @@ const RMBLArchive = () => {
 
             <nav className="space-y-2 overflow-y-auto mt-12 mb-8">
               {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href || "#"}
-                  className={`flex items-center space-x-3 p-3 rounded-lg ${
-                    item.active
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left ${
+                    activeView === item.id
                       ? "bg-green-50 text-green-600"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span>{item.name}</span>
-                </Link>
+                </button>
               ))}
             </nav>
 
             {/* Recent Ideas Section */}
-            {!isSidebarCollapsed && localTranscriptions.length > 0 && (
-              <div className="mt-8 px-2">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
-                  Recent Ideas
-                </h3>
-                <div className="space-y-3">
-                  {localTranscriptions.slice(0, 3).map((idea, index) => (
-                    <div
-                      key={index}
-                      className="p-2 rounded-lg hover:bg-gray-50"
-                    >
-                      <div className="flex justify-between items-center">
-                        <h4 className="text-sm font-medium text-gray-800 truncate">
-                          {idea.title}
-                        </h4>
-                        <FileText className="w-4 h-4 text-gray-400" />
+            {!isSidebarCollapsed &&
+              localTranscriptions.length > 0 &&
+              activeView === "dashboard" && (
+                <div className="mt-8 px-2">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+                    Recent Ideas
+                  </h3>
+                  <div className="space-y-3">
+                    {localTranscriptions.slice(0, 3).map((idea, index) => (
+                      <div
+                        key={index}
+                        className="p-2 rounded-lg hover:bg-gray-50"
+                      >
+                        <div className="flex justify-between items-center">
+                          <h4 className="text-sm font-medium text-gray-800 truncate">
+                            {idea.title}
+                          </h4>
+                          <FileText className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatWhisperTimestamp(idea.timestamp)}
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                          {idea.preview}
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatWhisperTimestamp(idea.timestamp)}
-                      </p>
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                        {idea.preview}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => handleNavClick("dashboard")}
+                    className="flex items-center justify-between mt-4 text-sm font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-lg w-full"
+                  >
+                    <span>View All Ideas</span>
+                    <span className="text-gray-400">→</span>
+                  </button>
                 </div>
-                <Link
-                  href="#"
-                  className="flex items-center justify-between mt-4 text-sm font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-lg"
-                >
-                  <span>View All Ideas</span>
-                  <span className="text-gray-400">→</span>
-                </Link>
-              </div>
-            )}
+              )}
 
             {/* User Profile Section for Mobile */}
             <div className="border-t pt-4">
@@ -627,11 +964,11 @@ const RMBLArchive = () => {
 
         <nav className="flex-1 overflow-y-auto p-2">
           {navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href || "#"}
-              className={`flex items-center p-3 rounded-lg mb-1 ${
-                item.active
+            <button
+              key={item.id}
+              onClick={() => handleNavClick(item.id)}
+              className={`w-full flex items-center p-3 rounded-lg mb-1 ${
+                activeView === item.id
                   ? "bg-green-50 text-green-600"
                   : "text-gray-700 hover:bg-gray-100"
               }`}
@@ -639,46 +976,50 @@ const RMBLArchive = () => {
             >
               <item.icon className="w-5 h-5" />
               {!isSidebarCollapsed && <span className="ml-3">{item.name}</span>}
-            </Link>
+            </button>
           ))}
 
           {/* Recent Ideas Section */}
-          {!isSidebarCollapsed && localTranscriptions.length > 0 && (
-            <div className="mt-8 px-2">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
-                Recent Ideas
-              </h3>
-              <div className="space-y-3">
-                {localTranscriptions.slice(0, 3).map((idea, index) => (
-                  <div key={index} className="p-2 rounded-lg hover:bg-gray-50">
-                    <div className="flex justify-between items-center">
-                      <h4 className="text-sm font-medium text-gray-800 truncate">
-                        {idea.title}
-                      </h4>
-                      <FileText className="w-4 h-4 text-gray-400" />
+          {!isSidebarCollapsed &&
+            localTranscriptions.length > 0 &&
+            activeView === "dashboard" && (
+              <div className="mt-8 px-2">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+                  Recent Ideas
+                </h3>
+                <div className="space-y-3">
+                  {localTranscriptions.slice(0, 3).map((idea, index) => (
+                    <div
+                      key={index}
+                      className="p-2 rounded-lg hover:bg-gray-50"
+                    >
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-medium text-gray-800 truncate">
+                          {idea.title}
+                        </h4>
+                        <FileText className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatWhisperTimestamp(idea.timestamp)}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                        {idea.preview}
+                      </p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {formatWhisperTimestamp(idea.timestamp)}
-                    </p>
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                      {idea.preview}
-                    </p>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <button
+                  onClick={() => handleNavClick("dashboard")}
+                  className="flex items-center justify-between mt-4 text-sm font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-lg w-full"
+                >
+                  <span>View All Ideas</span>
+                  <span className="text-gray-400">→</span>
+                </button>
               </div>
-              <Link
-                href="#"
-                className="flex items-center justify-between mt-4 text-sm font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-lg"
-              >
-                <span>View All Ideas</span>
-                <span className="text-gray-400">→</span>
-              </Link>
-            </div>
-          )}
+            )}
         </nav>
 
         {/* User Profile Section */}
-
         <div className="border-t p-4 flex-shrink-0">
           <div className="flex items-center justify-center">
             <img
@@ -754,240 +1095,34 @@ const RMBLArchive = () => {
 
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex flex-row justify-between mb-5">
-                <h1 className="text-xl font-bold">My RMBLs</h1>
-                <div className="hidden lg:flex items-center space-x-4">
-                  <Button
-                    onClick={handleUploadVoiceNote}
-                    disabled={isLimitExceeded}
-                    variant="outline"
-                    className={
-                      isLimitExceeded
-                        ? "bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed"
-                        : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    {isLimitExceeded
-                      ? "Upgrade to Upload"
-                      : "Upload Voice Note"}
-                  </Button>
-                  <Button
-                    onClick={handleNewWhisper}
-                    disabled={isLimitExceeded}
-                    className={
-                      isLimitExceeded
-                        ? "bg-gray-400 text-gray-600 cursor-not-allowed"
-                        : "bg-green-500 text-white hover:bg-green-600"
-                    }
-                  >
-                    <Mic className="w-4 h-4 mr-2" />
-                    {isLimitExceeded ? "Upgrade to Record" : "New Recording"}
-                  </Button>
-                </div>
-              </div>
+          <div className="p-6">{renderActiveComponent()}</div>
 
-              {/* Search and Filters */}
-              <div className="mb-4">
-                <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    className="pl-10"
-                    placeholder="Search your thoughts..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex space-x-2 overflow-x-auto pb-2">
-                  {filters.map((filter) => (
-                    <button
-                      key={filter}
-                      className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
-                        activeFilter === filter
-                          ? "bg-gray-200 text-gray-800"
-                          : "border border-gray-300 text-gray-600 hover:bg-gray-100"
-                      }`}
-                      onClick={() => setActiveFilter(filter)}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Usage Warning */}
-              {usage &&
-                usage.plan === "free" &&
-                usage.remainingToday <= 30 &&
-                usage.remainingToday > 0 && (
-                  <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg mb-6">
-                    <p className="text-sm">
-                      Warning: Only {Math.floor(usage.remainingToday / 60)}m{" "}
-                      {usage.remainingToday % 60}s of recording time remaining
-                      today!
-                    </p>
-                  </div>
-                )}
-
-              {/* Content */}
-              {filteredTranscriptions.length === 0 ? (
-                <div className="text-center py-16">
-                  <h2 className="text-xl font-medium mb-2">Welcome, RMBLer!</h2>
-                  <p className="text-gray-600 mb-8">
-                    {isLimitExceeded
-                      ? "You've used your free recording time for today. Upgrade to continue recording."
-                      : "Start by creating a new RMBL or uploading a voice note"}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {displayedTranscriptions.map((entry) => {
-                    const isDeleting = deletingIds.has(entry.id);
-                    return (
-                      <div
-                        key={entry.id}
-                        className={`bg-white p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200 ${
-                          isDeleting ? "opacity-50 pointer-events-none" : ""
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-3 mb-2">
-                              <h3 className="text-lg font-semibold text-gray-800 truncate">
-                                {entry.title}
-                              </h3>
-                              <span className="text-xs text-gray-500 mt-1 lg:mt-0 flex-shrink-0">
-                                {entry.date ||
-                                  formatWhisperTimestamp(entry.timestamp)}
-                                {entry.time && ` • ${entry.time}`}
-                                {entry.duration && ` • ${entry.duration}`}
-                              </span>
-                            </div>
-                            <p className="text-gray-600 text-sm line-clamp-3 lg:line-clamp-2 mb-3">
-                              {entry.preview}
-                            </p>
-
-                            {/* Tags */}
-                            {entry.tags && entry.tags.length > 0 && (
-                              <div className="flex flex-wrap items-center gap-2 mb-3">
-                                {entry.tags.map((tag, tagIndex) => (
-                                  <span
-                                    key={tagIndex}
-                                    className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getTagColor(
-                                      tag
-                                    )}`}
-                                  >
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Transforms */}
-                            {entry.transforms &&
-                              entry.transforms.length > 0 && (
-                                <div className="flex flex-col sm:flex-row sm:justify-start sm:items-center mt-4 space-y-2 sm:space-y-0 sm:space-x-4 text-sm">
-                                  <span className="text-gray-500">
-                                    Transformed:
-                                  </span>
-                                  <div className="flex flex-wrap gap-3">
-                                    {entry.transforms.map(
-                                      (transform, transformIndex) => (
-                                        <button
-                                          key={transformIndex}
-                                          className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                                        >
-                                          {transform === "Email" ? (
-                                            <Mail className="w-4 h-4" />
-                                          ) : transform === "Blog" ? (
-                                            <Edit className="w-4 h-4" />
-                                          ) : (
-                                            <List className="w-4 h-4" />
-                                          )}
-                                          <span>{transform}</span>
-                                        </button>
-                                      )
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                          </div>
-
-                          <button
-                            className="ml-4 flex-shrink-0 p-2 rounded-md hover:bg-gray-100"
-                            onClick={() => handleDelete(entry.id)}
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? (
-                              <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-4 h-4 text-red-600" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Load More Button */}
-                  {hasMoreToShow && (
-                    <div className="text-center mt-8">
-                      <Button
-                        onClick={handleLoadMore}
-                        disabled={isLoadingMore}
-                        variant="outline"
-                        className="bg-white border border-gray-300 text-gray-700 font-medium py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                      >
-                        {isLoadingMore ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            <span>Loading...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="mr-2 h-4 w-4" />
-                            <span>
-                              Load More (
-                              {filteredTranscriptions.length - displayCount}{" "}
-                              remaining)
-                            </span>
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
+          {/* Mobile Action Buttons - only show on dashboard */}
+          {activeView === "dashboard" && (
+            <div className="lg:hidden sticky bottom-0 bg-white border-t p-4 flex justify-center space-x-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleUploadVoiceNote}
+                disabled={isLimitExceeded}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {isLimitExceeded ? "Upgrade to Upload" : "Upload"}
+              </Button>
+              <Button
+                onClick={handleNewWhisper}
+                disabled={isLimitExceeded}
+                className={
+                  isLimitExceeded
+                    ? "flex-1 bg-gray-400 text-gray-600 cursor-not-allowed"
+                    : "flex-1 bg-green-500 text-white hover:bg-green-600"
+                }
+              >
+                <Mic className="w-4 h-4 mr-2" />
+                {isLimitExceeded ? "Upgrade to Record" : "New Recording"}
+              </Button>
             </div>
-          </div>
-
-          {/* Mobile Action Buttons - positioned to account for scrolling */}
-          <div className="lg:hidden sticky bottom-0 bg-white border-t p-4 flex justify-center space-x-4">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={handleUploadVoiceNote}
-              disabled={isLimitExceeded}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {isLimitExceeded ? "Upgrade to Upload" : "Upload"}
-            </Button>
-            <Button
-              onClick={handleNewWhisper}
-              disabled={isLimitExceeded}
-              className={
-                isLimitExceeded
-                  ? "flex-1 bg-gray-400 text-gray-600 cursor-not-allowed"
-                  : "flex-1 bg-green-500 text-white hover:bg-green-600"
-              }
-            >
-              <Mic className="w-4 h-4 mr-2" />
-              {isLimitExceeded ? "Upgrade to Record" : "New Recording"}
-            </Button>
-          </div>
+          )}
         </main>
       </div>
 

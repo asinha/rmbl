@@ -120,10 +120,25 @@ export const RECORDING_TYPES: {
 // Add this to your transformation prompts handler
 export function getTransformationPrompt(type: string): string {
   switch (type) {
+    case "summary":
+      return "Create a concise summary of the key points from this transcription. Focus on the main ideas and actionable items.";
+
+    case "quick-note":
+      return "Convert this transcription into a clean, organized note with bullet points for easy reference.";
+
+    case "list":
+      return "Extract and organize the information into a structured list format with clear categories and items.";
+
+    case "blog":
+      return "Transform this transcription into an engaging blog post with proper structure, introduction, body paragraphs, and conclusion.";
+
+    case "email":
+      return "Convert this transcription into a professional email format with appropriate subject, greeting, body, and closing.";
+
     case "linkedin-post":
       return "Return a concise, engaging LinkedIn post based on the transcription. The tone should be professional but informal, suitable for a founder or working professional audience. Highlight key insights, personal takeaways, or frameworks. Use short paragraphs and avoid hashtags unless contextually meaningful.";
-    // ... other cases
+
     default:
-      return "";
+      return "Process this transcription according to the specified requirements.";
   }
 }

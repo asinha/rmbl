@@ -119,7 +119,7 @@ export function RecordingModal({
         queryKey: trpc.whisper.listWhispers.queryKey(),
       });
 
-      router.push(`/main/ideas/${id}`);
+      router.push(`/main/dashboard/${id}`);
     } catch (err) {
       toast.error("Failed to transcribe. Try again.");
       setIsProcessing("idle");
@@ -200,13 +200,7 @@ export function RecordingModal({
                           </span>
                         )}
                       </div>
-                      <div className="w-full">
-                        <AudioWaveform
-                          analyserNode={analyserNode}
-                          isPaused={paused}
-                          //height={40}
-                        />
-                      </div>
+
                       {maxDuration &&
                         duration >= maxDuration - 10 &&
                         duration < maxDuration && (
@@ -227,6 +221,14 @@ export function RecordingModal({
                       >
                         <img src="/X.svg" className="size-4 text-gray-600" />
                       </button>
+
+                      <div>
+                        <AudioWaveform
+                          analyserNode={analyserNode}
+                          isPaused={paused}
+                          //height={40}
+                        />
+                      </div>
 
                       {/* Pause/Resume */}
                       <button

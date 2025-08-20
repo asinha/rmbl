@@ -29,7 +29,7 @@ const AuthRMBL = () => {
   // Redirect if already signed in
   useEffect(() => {
     if (userLoaded && isSignedIn) {
-      router.push("/main/ideas");
+      router.push("/main/dashboard");
     }
   }, [userLoaded, isSignedIn, router]);
 
@@ -55,7 +55,7 @@ const AuthRMBL = () => {
         await signIn.authenticateWithRedirect({
           strategy: "oauth_google",
           redirectUrl: "/api/sso-callback",
-          redirectUrlComplete: "/main/ideas",
+          redirectUrlComplete: "/main/dashboard",
         });
       }
     } catch (err: unknown) {
@@ -65,7 +65,7 @@ const AuthRMBL = () => {
           await signUp.authenticateWithRedirect({
             strategy: "oauth_google",
             redirectUrl: "/api/sso-callback",
-            redirectUrlComplete: "/main/ideas",
+            redirectUrlComplete: "/main/dashboard",
           });
         }
       } catch (signUpErr: unknown) {
@@ -93,6 +93,10 @@ const AuthRMBL = () => {
     <div className="bg-white font-sans">
       <Head>
         <title>Welcome to RMBL</title>
+        <meta
+          name="clerk-branding"
+          content='{"logo_url":"/LOGO-RMBL-ICON.svg","company_name":"RMBL"}'
+        />
         <link
           href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
           rel="stylesheet"

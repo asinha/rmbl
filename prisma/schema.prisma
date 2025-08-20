@@ -17,6 +17,7 @@ model Whisper {
   fullTranscription String
   audioTracks       AudioTrack[]
   transformations   Transformation[]
+  tags              Tag[]
 }
 
 model Transformation {
@@ -28,6 +29,25 @@ model Transformation {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   whisper      Whisper  @relation(fields: [whisperId], references: [id])
+}
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String
+  whisperId String
+  userId    String   // For security and user-specific operations
+  color     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  whisper   Whisper  @relation(fields: [whisperId], references: [id], onDelete: Cascade)
+  
+  // Indexes and constraints
+  @@unique([whisperId, name]) // Prevent duplicate tag names per whisper
+  @@index([userId])
+  @@index([whisperId])
+  @@index([name])
 }
 
 model AudioTrack {
@@ -63,6 +83,8 @@ model User {
   subscriptionHistory    SubscriptionHistory[]
   
   @@map("users")
+  WeeklyCheckin WeeklyCheckin[]
+  UsageLimit UsageLimit[]
 }
 
 model Transaction {
@@ -193,4 +215,60 @@ model RecordingLog {
   
   @@index([userId])
   @@index([timestamp])
+}
+
+
+
+// Weekly check-ins for accountability
+model WeeklyCheckin {
+  id               String   @id @default(uuid())
+  userId           String
+  scheduledDay     String   // e.g., "Monday"
+  scheduledTime    String   // e.g., "09:00 AM"
+  actualCheckinAt  DateTime?
+  status           CheckinStatus @default(SCHEDULED)
+  goals            String?  @db.Text
+  achievements     String?  @db.Text
+  challenges       String?  @db.Text
+  nextWeekPlan     String?  @db.Text
+  weekStartDate    DateTime // Start of the week this checkin is for
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, weekStartDate]) // One checkin per user per week
+  @@index([userId])
+  @@index([status])
+  @@index([weekStartDate])
+  @@index([userId, status])
+}
+
+// Usage limits for API calls, minutes, etc.
+model UsageLimit {
+  id        String   @id @default(uuid())
+  userId    String
+  limitType String   // e.g., "audio_minutes", "transformations", "api_calls"
+  used      Int      @default(0)
+  limit     Int
+  resetDate DateTime // When the limit resets (daily/monthly)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, limitType])
+  @@index([userId])
+  @@index([limitType])
+  @@index([resetDate])
+}
+
+// Enums
+enum CheckinStatus {
+  SCHEDULED
+  COMPLETED
+  MISSED
+  RESCHEDULED
 }
