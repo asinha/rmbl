@@ -21,6 +21,9 @@ export const whisperRouter = t.router({
         tags: {
           orderBy: { createdAt: "asc" },
         },
+        transformations: {
+          orderBy: { createdAt: "asc" },
+        },
       },
     });
     // Map to dashboard shape
@@ -34,6 +37,7 @@ export const whisperRouter = t.router({
           : w.fullTranscription,
       timestamp: w.createdAt.toISOString(),
       tags: w.tags,
+      transforms: w.transformations,
       // duration: ... // If you want to add duration, you can extend the model or calculate from audioTracks
     }));
   }),

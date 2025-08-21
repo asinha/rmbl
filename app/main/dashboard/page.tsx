@@ -34,7 +34,6 @@ import { RecordingModal } from "@/components/RecordingModal";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
 import WeeklyCheckinSchedule from "@/components/WeeklyCheckin";
-import ProgressDashboard from "@/components/Progress";
 import ProfileSettings from "@/components/Profile";
 
 interface Tag {
@@ -57,9 +56,11 @@ interface Transcription {
   time?: string;
   duration?: string;
   tags?: Tag[];
-  transforms?: string[];
+  transforms?: (
+    | string
+    | { typeName?: string; text?: string; [key: string]: any }
+  )[]; // Allow both strings and objects
 }
-
 interface UsageData {
   plan: string;
   dailyLimit: number;
@@ -79,6 +80,17 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   href?: string;
 }
+
+// Helper function to format time in minutes and seconds
+const formatTimeRemaining = (seconds: number) => {
+  if (seconds <= 0) return "0s";
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  if (mins > 0) {
+    return `${mins}m ${secs}s`;
+  }
+  return `${secs}s`;
+};
 
 // Component for Dashboard view
 const DashboardComponent = ({
@@ -164,6 +176,105 @@ const DashboardComponent = ({
         </div>
       </div>
 
+      {/* Free Plan Usage Display - Always visible for free users */}
+      {usage && usage.plan === "free" && (
+        <div
+          className={`border rounded-lg p-4 mb-6 ${
+            isLimitExceeded
+              ? "bg-red-50 border-red-200"
+              : usage.remainingToday <= 30
+              ? "bg-yellow-50 border-yellow-200"
+              : "bg-blue-50 border-blue-200"
+          }`}
+        >
+          <div className="flex justify-between items-center">
+            <div>
+              <h3
+                className={`font-semibold text-sm ${
+                  isLimitExceeded
+                    ? "text-red-800"
+                    : usage.remainingToday <= 30
+                    ? "text-yellow-800"
+                    : "text-blue-800"
+                }`}
+              >
+                Free Plan Usage
+              </h3>
+              <p
+                className={`text-xs mt-1 ${
+                  isLimitExceeded
+                    ? "text-red-600"
+                    : usage.remainingToday <= 30
+                    ? "text-yellow-600"
+                    : "text-blue-600"
+                }`}
+              >
+                {isLimitExceeded
+                  ? "Daily limit reached! Upgrade to continue recording."
+                  : `${formatTimeRemaining(
+                      usage.remainingToday
+                    )} remaining today`}
+              </p>
+            </div>
+            <div
+              className={`text-right ${
+                isLimitExceeded
+                  ? "text-red-600"
+                  : usage.remainingToday <= 30
+                  ? "text-yellow-600"
+                  : "text-blue-600"
+              }`}
+            >
+              <p className="text-lg font-bold">
+                {formatTimeRemaining(usage.remainingToday)}
+              </p>
+              <p className="text-xs">of 1 minute</p>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mt-3">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  isLimitExceeded
+                    ? "bg-red-500"
+                    : usage.remainingToday <= 30
+                    ? "bg-yellow-500"
+                    : "bg-blue-500"
+                }`}
+                style={{
+                  width: `${Math.max(
+                    0,
+                    Math.min(
+                      100,
+                      ((usage.dailyLimit - usage.remainingToday) /
+                        usage.dailyLimit) *
+                        100
+                    )
+                  )}%`,
+                }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-xs mt-1 text-gray-500">
+              <span>Used: {formatTimeRemaining(usage.usedToday)}</span>
+              <span>Total: {formatTimeRemaining(usage.dailyLimit)}</span>
+            </div>
+          </div>
+
+          {isLimitExceeded && (
+            <div className="mt-3 pt-3 border-t border-red-200">
+              <Button
+                className="w-full bg-red-600 text-white hover:bg-red-700"
+                onClick={() => (window.location.href = "/main/pricing")}
+              >
+                Upgrade Now to Continue Recording
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Search and Filters */}
       <div className="mb-4">
         <div className="relative mb-4">
@@ -192,19 +303,6 @@ const DashboardComponent = ({
           ))}
         </div>
       </div>
-
-      {/* Usage Warning */}
-      {usage &&
-        usage.plan === "free" &&
-        usage.remainingToday <= 30 &&
-        usage.remainingToday > 0 && (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg mb-6">
-            <p className="text-sm">
-              Warning: Only {Math.floor(usage.remainingToday / 60)}m{" "}
-              {usage.remainingToday % 60}s of recording time remaining today!
-            </p>
-          </div>
-        )}
 
       {/* Content */}
       {transcriptions.length === 0 ? (
@@ -244,14 +342,13 @@ const DashboardComponent = ({
                       <p className="text-gray-600 text-sm line-clamp-3 lg:line-clamp-2 mb-3">
                         {entry.preview}
                       </p>
-
                       {/* Tags */}
                       {entry.tags && entry.tags.length > 0 && (
                         <div className="flex flex-wrap items-center gap-2 mb-3">
                           {entry.tags.map((tag, tagIndex) => (
                             <span
                               key={tagIndex}
-                              className={`text-xs font-medium px-2.5 py-0.5 rounded-full`}
+                              className={`text-xs text-white font-medium px-2.5 py-0.5 rounded-full`}
                               style={{ backgroundColor: tag.color }}
                             >
                               {tag.name}
@@ -259,28 +356,37 @@ const DashboardComponent = ({
                           ))}
                         </div>
                       )}
-
-                      {/* Transforms */}
+                      {/* Transform */}
                       {entry.transforms && entry.transforms.length > 0 && (
                         <div className="flex flex-col sm:flex-row sm:justify-start sm:items-center mt-4 space-y-2 sm:space-y-0 sm:space-x-4 text-sm">
                           <span className="text-gray-500">Transformed:</span>
                           <div className="flex flex-wrap gap-3">
                             {entry.transforms.map(
-                              (transform, transformIndex) => (
-                                <button
-                                  key={transformIndex}
-                                  className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                                >
-                                  {transform === "Email" ? (
-                                    <Mail className="w-4 h-4" />
-                                  ) : transform === "Blog" ? (
-                                    <Edit className="w-4 h-4" />
-                                  ) : (
-                                    <List className="w-4 h-4" />
-                                  )}
-                                  <span>{transform}</span>
-                                </button>
-                              )
+                              (transform, transformIndex) => {
+                                // Handle both string and object transforms
+                                const transformName =
+                                  typeof transform === "string"
+                                    ? transform
+                                    : transform.typeName ||
+                                      transform.text ||
+                                      "Unknown";
+
+                                return (
+                                  <button
+                                    key={transformIndex}
+                                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                                  >
+                                    {transformName === "Email" ? (
+                                      <Mail className="w-4 h-4" />
+                                    ) : transformName === "Blog" ? (
+                                      <Edit className="w-4 h-4" />
+                                    ) : (
+                                      <List className="w-4 h-4" />
+                                    )}
+                                    <span>{transformName}</span>
+                                  </button>
+                                );
+                              }
                             )}
                           </div>
                         </div>
@@ -444,11 +550,7 @@ const RMBLArchive = () => {
       name: "Weekly Check-in",
       icon: Archive,
     },
-    {
-      id: "progress",
-      name: "Progress",
-      icon: TrendingUp,
-    },
+
     {
       id: "profile",
       name: "Profile",
@@ -472,6 +574,31 @@ const RMBLArchive = () => {
     });
   };
 
+  const fetchUserFromDB = useCallback(
+    async (showLoading = false) => {
+      try {
+        if (showLoading) setIsRefreshing(true);
+
+        const res = await fetch("/api/user/me", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setDbUser(data.user || null);
+        }
+      } catch (error) {
+        console.error("Error fetching user from DB:", error);
+      } finally {
+        if (showLoading) setIsRefreshing(false);
+      }
+    },
+    [setIsRefreshing, setDbUser]
+  );
+
   useEffect(() => {
     const fetchUsage = async () => {
       try {
@@ -482,8 +609,8 @@ const RMBLArchive = () => {
 
         if (data.success) {
           const plan = data.usage.plan || "free";
-          const dailyLimit =
-            plan === "free" ? data.usage.dailyLimit || 60 : Infinity;
+          // Ensure free plan is limited to exactly 60 seconds (1 minute)
+          const dailyLimit = plan === "free" ? 60 : Infinity;
           const usedToday = data.usage.usedToday || 0;
           const remainingToday =
             plan === "free" ? Math.max(0, dailyLimit - usedToday) : Infinity;
@@ -526,28 +653,6 @@ const RMBLArchive = () => {
     };
 
     fetchUsage();
-  }, []);
-
-  const fetchUserFromDB = useCallback(async (showLoading = false) => {
-    try {
-      if (showLoading) setIsRefreshing(true);
-
-      const res = await fetch("/api/user/me", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        cache: "no-store",
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setDbUser(data.user || null);
-      }
-    } catch (error) {
-      console.error("Error fetching user from DB:", error);
-    } finally {
-      if (showLoading) setIsRefreshing(false);
-    }
   }, []);
 
   useEffect(() => {
@@ -607,8 +712,8 @@ const RMBLArchive = () => {
 
       if (data.success) {
         const plan = data.usage.plan || "free";
-        const dailyLimit =
-          plan === "free" ? data.usage.dailyLimit || 60 : Infinity;
+        // Ensure free plan is limited to exactly 60 seconds (1 minute)
+        const dailyLimit = plan === "free" ? 60 : Infinity;
         const usedToday = data.usage.usedToday || 0;
         const remainingToday =
           plan === "free" ? Math.max(0, dailyLimit - usedToday) : Infinity;
@@ -792,8 +897,7 @@ const RMBLArchive = () => {
         );
       case "weekly-checkin":
         return <WeeklyCheckinSchedule />;
-      case "progress":
-        return <ProgressDashboard />;
+
       case "profile":
         return <ProfileSettings />;
       default:
@@ -920,8 +1024,8 @@ const RMBLArchive = () => {
                   </Badge>
                   {usage.plan === "free" && (
                     <div className="text-xs text-gray-600">
-                      {Math.floor(usage.remainingToday / 60)}m{" "}
-                      {usage.remainingToday % 60}s remaining today
+                      {formatTimeRemaining(usage.remainingToday)} remaining
+                      today
                     </div>
                   )}
                 </div>
@@ -1044,15 +1148,18 @@ const RMBLArchive = () => {
               <div
                 className={`text-xs px-2 py-1 rounded-full font-semibold text-center mb-2 ${
                   usage.plan === "free"
-                    ? "bg-yellow-100 text-yellow-800"
+                    ? isLimitExceeded
+                      ? "bg-red-100 text-red-800"
+                      : usage.remainingToday <= 30
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-blue-100 text-blue-800"
                     : "bg-green-100 text-green-800"
                 }`}
               >
                 {usage.plan.toUpperCase()} PLAN
                 {usage.plan === "free" && (
                   <div className="mt-1">
-                    {Math.floor(usage.remainingToday / 60)}m{" "}
-                    {usage.remainingToday % 60}s remaining
+                    {formatTimeRemaining(usage.remainingToday)} remaining
                   </div>
                 )}
               </div>
@@ -1091,6 +1198,23 @@ const RMBLArchive = () => {
             </button>
             <h1 className="text-xl font-bold">RMBL</h1>
           </div>
+
+          {/* Desktop usage indicator in header */}
+          {usage && usage.plan === "free" && (
+            <div className="hidden lg:flex items-center space-x-2">
+              <div
+                className={`text-sm px-3 py-1 rounded-full font-medium ${
+                  isLimitExceeded
+                    ? "bg-red-100 text-red-800"
+                    : usage.remainingToday <= 30
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-blue-100 text-blue-800"
+                }`}
+              >
+                {formatTimeRemaining(usage.remainingToday)} left
+              </div>
+            </div>
+          )}
         </header>
 
         {/* Scrollable Content Area */}
@@ -1150,9 +1274,7 @@ const RMBLArchive = () => {
       {showLimitModal && (
         <LimitReachedModal
           onClose={() => setShowLimitModal(false)}
-          limitMessage={`You've reached your daily limit of ${
-            usage ? usage.dailyLimit : 300
-          } seconds of recording time.`}
+          limitMessage={`You've reached your daily limit of 1 minute of recording time. Upgrade to continue recording unlimited voice notes.`}
         />
       )}
     </div>

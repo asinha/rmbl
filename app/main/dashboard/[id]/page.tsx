@@ -21,7 +21,7 @@ export async function generateMetadata({
     };
   }
   return {
-    title: `${whisper.title.slice(0, 60)} - Whisper App`,
+    title: `${whisper.title.slice(0, 60)} - RMBL App`,
     description:
       whisper.fullTranscription?.slice(0, 160) ||
       "View and edit your transcription.",

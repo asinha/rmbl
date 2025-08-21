@@ -42,6 +42,8 @@ model Tag {
   
   // Relations
   whisper   Whisper  @relation(fields: [whisperId], references: [id], onDelete: Cascade)
+   
+  transcriptions TranscriptionTag[]
   
   // Indexes and constraints
   @@unique([whisperId, name]) // Prevent duplicate tag names per whisper
@@ -198,13 +200,37 @@ model DailyUsage {
 model Transcription {
   id          String   @id @default(cuid())
   userId      String
+  title       String
+  preview     String
   content     String
+  timestamp   String
+  date        String?
+  time        String?
+  duration    String?
   language    String?
   confidence  Float?
   createdAt   DateTime @default(now())
   
+  // Relations
+  tags        TranscriptionTag[]
+  transforms  String[] // Array of transform names/types
+  
   @@index([userId])
+  @@index([createdAt])
 }
+
+// Junction table for many-to-many relationship with tags
+model TranscriptionTag {
+  id             String        @id @default(cuid())
+  transcriptionId String
+  tagId          String
+  
+  transcription  Transcription @relation(fields: [transcriptionId], references: [id], onDelete: Cascade)
+  tag            Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([transcriptionId, tagId])
+}
+
 
 model RecordingLog {
   id          String   @id @default(cuid())

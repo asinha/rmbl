@@ -61,6 +61,8 @@ export async function POST(req: NextRequest) {
         return "Return the Markdown of entire blog post with subheadings";
       case "email":
         return "If type is email also generate an email subject line and a short email body with introductory paragraph and a closing paragraph for thanking  the reader for reading.";
+      case "linkedin":
+        return "Return a LinkedIn post with engaging hook, 3-4 key insights, relevant hashtags, and a call-to-action question to encourage engagement.";
       default:
         return "";
     }
