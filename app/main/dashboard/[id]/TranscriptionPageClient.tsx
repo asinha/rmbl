@@ -19,7 +19,7 @@ import { LoadingSection } from "@/components/whisper-page/LoadingSection";
 import { CustomMarkdown } from "@/components/CustomMarkdown";
 import { useTogetherApiKey } from "@/components/TogetherApiKeyProvider";
 import { useLimits } from "@/components/hooks/useLimits";
-import { X, Plus, Tag, ChevronDown } from "lucide-react";
+import { X, Plus, Tag, ChevronDown, ArrowLeft } from "lucide-react";
 
 const DELAY_SAVE = 10000; // 10 seconds
 
@@ -572,6 +572,16 @@ export default function TranscriptionPageClient({
     <div className="min-h-[calc(100vh-60px)] bg-white">
       <header className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
         <div className="mx-auto max-w-[688px] w-full flex items-center gap-4">
+          {/* Back button */}
+          <button
+            onClick={() => router.push("/main/dashboard")}
+            className="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 transition-colors"
+            aria-label="Back to dashboard"
+          >
+            <ArrowLeft className="w-4 h-4 text-slate-600" />
+          </button>
+
+          {/* Title input */}
           <input
             className="text-xl font-semibold bg-transparent border-none outline-none w-full"
             value={editableTitle}
@@ -600,6 +610,8 @@ export default function TranscriptionPageClient({
             spellCheck={true}
             disabled={titleMutation.status === "pending"}
           />
+
+          {/* Transform dropdown - keep existing code */}
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger
               asChild
